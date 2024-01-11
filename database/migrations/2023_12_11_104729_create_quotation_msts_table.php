@@ -1,0 +1,38 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('quotation_msts', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid',100)->nullable();
+            $table->string('quotation_no',100)->nullable();
+            $table->integer('company_id')->default(0);
+            $table->integer('buyer_id')->default(0);
+            $table->integer('quotation_type')->default(0)->nullable()->comment('1=Inquire,2=Order');
+            $table->integer('order_inquire_id')->default(0)->nullable();
+            $table->date('quotation_date')->nullable();
+            $table->string('remarks',200)->nullable();
+            $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');
+            $table->integer('created_by')->default(0);
+            $table->integer('updated_by')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('quotation_msts');
+    }
+};
