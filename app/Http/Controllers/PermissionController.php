@@ -36,6 +36,20 @@ class PermissionController extends Controller
             return response($response, 422);
         }
     }
+    public function ck_getPermissionInfo($role_id)
+    {
+        $data = Permission::where('role_id', $role_id)->get();
+        if ($data->count() > 0) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
 
     public function update(Request $request)
     {

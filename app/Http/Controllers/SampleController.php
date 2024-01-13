@@ -97,7 +97,7 @@ class SampleController extends Controller
         DB::beginTransaction();
         $data_mst = Sample_mst::create($request_data);
         $data_dtls_array = [];
-        foreach ($request->data_dtls as $key=>$row) {
+        foreach ($request->data_dtls as $key => $row) {
             if ($row["product_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'sample_id' => $data_mst->id,
@@ -229,14 +229,14 @@ class SampleController extends Controller
     {
         $data_mst = Sample_mst::where('uuid', $uuid)->with('company_info')->with('buyer_info')->with('inquire_info')->where('active_status', 1)->first();
         $data_dtls = DB::table('sample_dtls')
-            ->select('sample_id', 'inquire_mst_id', 'inquire_dtls_id','products.name as product_name','colors.name as color_name','sizes.name as size_name','units.name as unit_name')
+            ->select('sample_id', 'inquire_mst_id', 'style', 'inquire_dtls_id', 'products.name as product_name', 'colors.name as color_name', 'sizes.name as size_name', 'units.name as unit_name')
             ->join('products', 'sample_dtls.product_id', '=', 'products.id')
             ->join('colors', 'sample_dtls.color_id', '=', 'colors.id')
             ->join('sizes', 'sample_dtls.size_id', '=', 'sizes.id')
             ->join('units', 'sample_dtls.unit_id', '=', 'units.id')
             ->where('sample_dtls.sample_id', $data_mst->id)
             ->where('sample_dtls.active_status', 1)
-            ->groupBy('sample_id', 'inquire_mst_id', 'inquire_dtls_id','product_name','color_name','size_name','unit_name')
+            ->groupBy('sample_id', 'inquire_mst_id', 'style','inquire_dtls_id', 'product_name', 'color_name', 'size_name', 'unit_name')
             ->get();
 
         if ($data_mst->count() > 0) {
@@ -252,11 +252,11 @@ class SampleController extends Controller
         }
     }
 
-    public function getSampleLogInfo($inquire_dtls,$uuid)
+    public function getSampleLogInfo($inquire_dtls, $uuid)
     {
         $data_mst = Sample_mst::where('uuid', $uuid)->with('company_info')->with('buyer_info')->with('inquire_info')->where('active_status', 1)->first();
         $data_dtls = DB::table('sample_dtls')
-            ->select('sample_id', 'inquire_mst_id', 'inquire_dtls_id','products.name as product_name','colors.name as color_name','sizes.name as size_name','units.name as unit_name')
+            ->select('sample_dtls.*', 'products.name as product_name', 'colors.name as color_name', 'sizes.name as size_name', 'units.name as unit_name')
             ->join('products', 'sample_dtls.product_id', '=', 'products.id')
             ->join('colors', 'sample_dtls.color_id', '=', 'colors.id')
             ->join('sizes', 'sample_dtls.size_id', '=', 'sizes.id')
@@ -264,12 +264,12 @@ class SampleController extends Controller
             ->where('sample_dtls.sample_id', $data_mst->id)
             ->where('sample_dtls.inquire_dtls_id', $inquire_dtls)
             ->where('sample_dtls.active_status', 1)
-            ->groupBy('sample_id', 'inquire_mst_id', 'inquire_dtls_id','product_name','color_name','size_name','unit_name')
             ->get();
 
         if ($data_mst->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
+            $response['approved_list'] = self::getApprovedList();
             $response['company_list'] = self::getPartyList(1);
             $response['buyer_list'] = self::getPartyList(2);
             $response['data_mst'] = $data_mst;

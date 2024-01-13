@@ -134,6 +134,7 @@ Route::middleware('auth:api')->group(function () {
     //Permission
     Route::get('permission', [PermissionController::class, 'index']);
     Route::post('permission_details', [PermissionController::class, 'getPermissionInfo']);
+    Route::get('permission_details_data/{role_id}', [PermissionController::class, 'ck_getPermissionInfo']);
     Route::post('permission', [PermissionController::class, 'update']);
 
     //User Permission
