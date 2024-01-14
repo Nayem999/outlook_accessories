@@ -54,7 +54,11 @@ class UserPermissionController extends Controller
     public function update(Request $request)
     {
         DB::beginTransaction();
-        $old_data = User_permission::where('role_id', $request->all_data[0]['role_id'])->where('user_id',  $request->all_data[0]['user_id'])->delete();
+        $pre_data = User_permission::where('role_id', $request->all_data[0]['role_id'])->where('user_id',  $request->all_data[0]['user_id'])->first();
+        $old_data = True;
+        if ($pre_data) {
+            $old_data = User_permission::where('role_id', $request->all_data[0]['role_id'])->where('user_id',  $request->all_data[0]['user_id'])->delete();
+        }
         // $module_list = self::getModuleList();
         $data_dtls_insert = [];
         $user_id = Auth()->user()->id;
@@ -65,6 +69,7 @@ class UserPermissionController extends Controller
                     'user_id' => $row["user_id"],
                     'module' => $row["module"],
                     'view' => $row["view"],
+                    'add' => $row["add"],
                     'edit' => $row["edit"],
                     'delete' => $row["delete"],
                     'created_by' => $user_id,
@@ -89,7 +94,6 @@ class UserPermissionController extends Controller
             $response['message'] = 'Something went to wrong!';
             return response($response, 422);
         }
-
     }
 
     public function permission_check($module_name = null)

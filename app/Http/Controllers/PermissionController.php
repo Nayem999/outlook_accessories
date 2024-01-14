@@ -36,7 +36,7 @@ class PermissionController extends Controller
             return response($response, 422);
         }
     }
-    public function ck_getPermissionInfo($role_id)
+    public function getPermissionData($role_id)
     {
         $data = Permission::where('role_id', $role_id)->get();
         if ($data->count() > 0) {
@@ -54,7 +54,11 @@ class PermissionController extends Controller
     public function update(Request $request)
     {
         DB::beginTransaction();
-        $old_data = Permission::where('role_id', $request->all_data[0]['role_id'])->delete();
+        $pre_data = Permission::where('role_id', $request->all_data[0]['role_id'])->first();
+        $old_data = True;
+        if($pre_data){
+            $old_data = Permission::where('role_id', $request->all_data[0]['role_id'])->delete();
+        }
         $user_id = Auth()->user()->id;
         $data_dtls_insert = [];
         foreach ($request->all_data as $row) {
@@ -63,6 +67,7 @@ class PermissionController extends Controller
                     'role_id' => $row["role_id"],
                     'module' => $row["module"],
                     'view' => $row["view"],
+                    'add' => $row["add"],
                     'edit' => $row["edit"],
                     'delete' => $row["delete"],
                     'created_by' => $user_id,
