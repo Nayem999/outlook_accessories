@@ -76,6 +76,7 @@ class BankController extends Controller
             'address' => "nullable|string|max:250",
             'phone' => "nullable|string|max:30",
             'swift_code' => "nullable|string|max:30",
+            'bin_no' => "nullable|string|max:100",
             'opening_balance' => "nullable|numeric",
         ]);
         if ($validator->fails()) {
@@ -139,6 +140,7 @@ class BankController extends Controller
             'address' => "nullable|string|max:250",
             'phone' => "nullable|string|max:30",
             'swift_code' => "nullable|string",
+            'bin_no' => "nullable|string|max:100",
         ]);
 
         if ($validator->fails()) {

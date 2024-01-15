@@ -214,15 +214,15 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // Validate the input data
+        // 'old_password' => 'required',
         $request->validate([
-            'old_password' => 'required',
             'new_password' => 'required|min:8|confirmed',
         ]);
 
         // Check if the old password matches
-        if (!Hash::check($request->input('old_password'), $user->password)) {
+        /* if (!Hash::check($request->input('old_password'), $user->password)) {
             return response()->json(['message' => 'Invalid old password'], 422);
-        }
+        } */
 
         // Update the user's password
         $user->password = Hash::make($request->input('new_password'));
