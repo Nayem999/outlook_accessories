@@ -216,7 +216,7 @@ class AuthController extends Controller
         // Validate the input data
         // 'old_password' => 'required',
         $request->validate([
-            'new_password' => 'required|min:8|confirmed',
+            'new_password' => 'required|string|min:6|confirmed',
         ]);
 
         // Check if the old password matches

@@ -322,7 +322,7 @@ class LcController extends Controller
     public function getLcInfo($uuid)
     {
 
-        $data = Lc::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'opening_bank_info', 'advising_bank_info', 'data_dtls.pi_info', 'data_dtls.pi_info.data_dtls', 'data_dtls.pi_info.data_dtls.product_info'])->where('active_status', 1)->first();
+        $data = Lc::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'opening_bank_info', 'advising_bank_info', 'data_dtls.pi_info', 'data_dtls.pi_info.data_dtls', 'data_dtls.pi_info.data_dtls.product_info', 'data_dtls.pi_info.data_dtls.color_info', 'data_dtls.pi_info.data_dtls.size_info', 'data_dtls.pi_info.data_dtls.unit_info'])->where('active_status', 1)->first();
         // $data_pi = Lc_pi::where('lc_id', $request->id)->with('pi_info')->where('active_status', 1)->get();
 
         if ($data) {

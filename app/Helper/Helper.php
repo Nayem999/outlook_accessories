@@ -186,7 +186,7 @@ trait Helper
 
     public static function getModuleList()
     {
-        $data = array('Inquiry', 'Quotation', 'Sample', 'Order', 'Work Order', 'Proforma Invoice', 'Good Receive', 'Goods Delivery', 'LC Management', 'Document Acceptance', 'Maturity', 'Bank', 'Transaction', 'User', 'Party', 'Product', 'Color', 'Size', 'Unit', 'Settings', 'Report');
+        $data = array('Inquiry', 'Quotation', 'Sample', 'Order', 'Work Order', 'Proforma Invoice', 'Goods Receive', 'Goods Delivery', 'LC Management', 'Document Acceptance', 'Maturity', 'Bank', 'Transaction', 'User', 'Party', 'Product', 'Color', 'Size', 'Unit', 'Settings', 'Report');
         return $data;
     }
 
