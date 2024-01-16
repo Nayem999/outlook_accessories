@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Doc_acpt_mst;
 use App\Models\Doc_acpt_dtl;
 use App\Models\Document;
+use App\Models\Lc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -261,6 +262,7 @@ class DocAcptController extends Controller
     {
 
         $data = Doc_acpt_mst::where('uuid', $uuid)->with(['data_dtls.doc_info'])->where('active_status', 1)->first();
+        $data_lc = Lc::where('lc_no', $data->lc_num)->with(['company_info', 'buyer_info', 'opening_bank_info', 'advising_bank_info', 'data_dtls.pi_info', 'data_dtls.pi_info.data_dtls', 'data_dtls.pi_info.data_dtls.product_info', 'data_dtls.pi_info.data_dtls.color_info', 'data_dtls.pi_info.data_dtls.size_info', 'data_dtls.pi_info.data_dtls.unit_info'])->where('active_status', 1)->first();
         // $data_dtls = Doc_acpt_dtl::where('doc_acpt_id', $request->id)->where('active_status', 1)->get();
 
         if ($data) {
@@ -268,6 +270,7 @@ class DocAcptController extends Controller
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
             $response['doc_where_list'] = self::getDocPlaceList();
+            $response['data_lc'] = $data_lc;
             return response($response, 200);
         } else {
             $response['status'] = 'error';
@@ -281,6 +284,7 @@ class DocAcptController extends Controller
         // $data = Doc_acpt_mst::where('id', $request->id)->first();
         $data_mst = Doc_acpt_mst::where('id', $request->id)->where('active_status', 1)->first();
         $data_dtls = Doc_acpt_dtl::where('doc_acpt_id', $request->id)->where('active_status', 1)->get();
+
 
         if ($data_mst->count() > 0) {
             $response['status'] = 'success';

@@ -274,7 +274,7 @@ class BankController extends Controller
         $bank_data = Bank::where('uuid', $uuid)->first();
         $data = Transaction::where('active_status', 1)->where('approval_status', 1)->where('bank_id', $bank_data->id)->orderBy('id')->with('party_info')->with('trans_purpose_info')->get();
 
-        if ($data->count() > 0) {
+        if ($bank_data) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['getTransTypeList'] = self::getTransTypeList();
