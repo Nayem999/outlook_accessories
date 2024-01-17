@@ -57,8 +57,7 @@ class MaturityPaymentController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong !",
-                'error' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -82,7 +81,6 @@ class MaturityPaymentController extends Controller
             $response = [
                 "status" => "error",
                 "message" => "Already Payment Taken!",
-                'error' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -143,8 +141,7 @@ class MaturityPaymentController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong!",
-                'errors' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }

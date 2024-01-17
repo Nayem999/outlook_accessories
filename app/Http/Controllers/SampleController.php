@@ -71,8 +71,7 @@ class SampleController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong !",
-                'error' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -161,8 +160,7 @@ class SampleController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong!",
-                'errors' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -302,8 +300,7 @@ class SampleController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong !",
-                'error' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -319,7 +316,7 @@ class SampleController extends Controller
             'unit_id' => $request->unit_id,
             'qnty' => $request->qnty,
             'sample_status' => $request->sample_status,
-            'remarks' => $request->remark,
+            'remarks' => $request->remarks,
             'log_date' => Carbon::now(),
             'created_by' => $user_id,
         ];

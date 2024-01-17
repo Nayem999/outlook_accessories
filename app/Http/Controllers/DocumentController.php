@@ -44,8 +44,7 @@ class DocumentController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong !",
-                'error' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
@@ -75,8 +74,7 @@ class DocumentController extends Controller
         if ($validator->fails()) {
             $response = [
                 "status" => "error",
-                "message" => "Something went to wrong!",
-                'errors' => $validator->errors()->all()
+                'message' => $validator->errors()->all()
             ];
             return response($response, 422);
         }
