@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('dob')->nullable();
             $table->string('phone',30)->nullable();
             $table->string('address',200)->nullable();
+            $table->string('bin_no',100)->nullable();
             $table->integer('opening_balance')->nullable();
             $table->integer('trans_id')->default(0);
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');

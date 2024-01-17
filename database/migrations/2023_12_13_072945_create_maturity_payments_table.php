@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('uuid',100)->nullable();
             $table->integer('lc_id')->default(0)->nullable();
             $table->string('lc_num',100)->nullable();
-            $table->integer('lc_value')->default(0)->nullable();
+            $table->decimal('lc_value',11,2)->default(0)->nullable();
             $table->integer('doc_acceptace_id')->default(0)->nullable();
             $table->date('payment_date')->nullable();
             $table->float('exchange_rate')->nullable();
-            $table->float('amount')->nullable();
+            $table->decimal('amount',11,2)->nullable();
             $table->string('remarks')->nullable();
             $table->integer('trans_id')->default(0)->nullable();
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('address',250)->nullable();
             $table->string('phone',30)->nullable();
             $table->string('swift_code',30)->nullable();
+            $table->string('bin_no',100)->nullable();
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');
             $table->integer('created_by')->default(0);
             $table->integer('updated_by')->default(0);

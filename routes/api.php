@@ -137,8 +137,8 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::get('permission_details_data/{role_id}', [PermissionController::class, 'getPermissionData']);
         Route::post('permission', [PermissionController::class, 'update']);
 
-        //User Permission
-        // Route::get('user_permission', [PermissionController::class, 'index']);
+        // User Permission
+        Route::get('user_permission_get', [UserPermissionController::class, 'index']);
         Route::get('role_wise_user/{role_id}', [UserPermissionController::class, 'getRoleWiseUser']);
         Route::post('user_permission_details', [UserPermissionController::class, 'getPermissionInfo']);
         Route::post('user_permission', [UserPermissionController::class, 'update']);

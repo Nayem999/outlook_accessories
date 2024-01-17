@@ -91,7 +91,7 @@ class GoodsRcvController extends Controller
         $data_mst = Goods_rcv_mst::create($request_data);
         $data_dtls_array = [];
         foreach ($request->data_dtls as $row) {
-            if ($row["wo_dtls_id"]) {
+            if ($row["wo_dtls_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'goods_rcv_id' => $data_mst->id,
                     'wo_dtls_id' => $row["wo_dtls_id"],
@@ -166,7 +166,7 @@ class GoodsRcvController extends Controller
         $data_dtls_insert=[];
         $data_dtls = $data_del_dtls = true;
         foreach ($request->data_dtls as $row) {
-            if ($row["wo_dtls_id"]) {
+            if ($row["wo_dtls_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'goods_rcv_id' => $mst_id,
                     'wo_dtls_id' => $row["wo_dtls_id"],

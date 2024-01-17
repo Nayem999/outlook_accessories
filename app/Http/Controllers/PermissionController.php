@@ -13,7 +13,7 @@ class PermissionController extends Controller
 
     public function index()
     {
-        $role_list = Role::orderBy('id', 'desc')->select('id', 'name')->where('active_status', 1)->get();
+        $role_list = Role::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
         $module_list = self::getModuleList();
         $response['status'] = 'success';
         $response['message'] = 'Data found.';

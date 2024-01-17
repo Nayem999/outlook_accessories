@@ -98,7 +98,7 @@ class SampleController extends Controller
         $data_mst = Sample_mst::create($request_data);
         $data_dtls_array = [];
         foreach ($request->data_dtls as $key => $row) {
-            if ($row["product_id"] && $row["qnty"]) {
+            if ($row["product_id"] && $row["qnty"] && $row["sample_status"]) {
                 $data_dtls_arr = [
                     'sample_id' => $data_mst->id,
                     'inquire_mst_id' => $request->inquire_id,

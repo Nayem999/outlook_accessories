@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('lc_issue_date')->nullable();
             $table->date('lc_expiry_date')->nullable();
             $table->integer('currency_id')->default(0)->nullable();
-            $table->integer('lc_value')->default(0)->nullable();
+            $table->decimal('lc_value',11,2)->default(0)->nullable();
             $table->integer('opening_bank_id')->default(0)->nullable();
             $table->integer('advising_bank_id')->default(0)->nullable();
             $table->string('amendment_no',10)->nullable();

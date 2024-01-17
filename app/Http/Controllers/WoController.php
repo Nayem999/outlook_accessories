@@ -97,7 +97,7 @@ class WoController extends Controller
         $data_mst = Wo_mst::create($request_data);
         $data_dtls_array = [];
         foreach ($request->data_dtls as $row) {
-            if ($row["order_dtls_id"] && $row["qnty"]) {
+            if ($row["order_dtls_id"] && $row["qnty"] && $row["product_id"]) {
                 $data_dtls_arr = [
                     'wo_id' => $data_mst->id,
                     'order_id' => $data_mst->order_id,
@@ -177,7 +177,7 @@ class WoController extends Controller
         $data_dtls_insert = [];
         $active_dtls_id = array();
         foreach ($request->data_dtls as $row) {
-            if ($row["order_dtls_id"] && $row["qnty"]) {
+            if ($row["order_dtls_id"] && $row["qnty"] && $row["product_id"]) {
                 $data_dtls_arr = [
                     'wo_id' => $mst_id,
                     'order_dtls_id' => $row["order_dtls_id"],

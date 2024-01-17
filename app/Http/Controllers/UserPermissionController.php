@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\User_permission;
 use Carbon\Carbon;
@@ -11,6 +12,19 @@ use Illuminate\Support\Facades\DB;
 
 class UserPermissionController extends Controller
 {
+
+    public function index()
+    {
+        $role_list = Role::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
+        $user_list = User::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
+        $module_list = self::getModuleList();
+        $response['status'] = 'success';
+        $response['message'] = 'Data found.';
+        $response['role_list'] = $role_list;
+        $response['user_list'] = $user_list;
+        $response['module_list'] = $module_list;
+        return response($response, 200);
+    }
 
     public function getRoleWiseUser($role_id)
     {
@@ -109,6 +123,7 @@ class UserPermissionController extends Controller
         if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
+            $response['module_list'] = self::getModuleList();
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
@@ -119,6 +134,7 @@ class UserPermissionController extends Controller
             if ($data->count() > 0) {
                 $response['status'] = 'success';
                 $response['message'] = 'Data found.';
+                $response['module_list'] = self::getModuleList();
                 $response['response_data'] = $data;
                 return response($response, 200);
             } else {
