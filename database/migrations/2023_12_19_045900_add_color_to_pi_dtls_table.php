@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::table('pi_dtls', function (Blueprint $table) {
             $table->integer('product_id')->default(0)->after('order_dtls_id');
             $table->string('style',100)->nullable()->after('product_id');
-            $table->integer('size_id')->default(0)->after('style');
-            $table->integer('color_id')->default(0)->after('size_id');
-            $table->integer('unit_id')->default(0)->after('color_id');
+            $table->integer('size_id')->nullable()->default(0)->after('style');
+            $table->integer('color_id')->nullable()->default(0)->after('size_id');
+            $table->integer('unit_id')->nullable()->default(0)->after('color_id');
         });
     }
 

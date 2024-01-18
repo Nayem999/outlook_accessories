@@ -41,7 +41,8 @@ class ColorController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => "required|unique:colors,name,NULL,id,active_status,1"
+            'name' => "required|unique:colors,name,NULL,id,active_status,1",
+            'code' => "nullable|string|max:60",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -70,6 +71,7 @@ class ColorController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => "required|unique:colors,name,$request->id,id,active_status,1",
+            'code' => "nullable|string|max:60",
             'uuid' => "required",
             'id' => "required",
         ]);

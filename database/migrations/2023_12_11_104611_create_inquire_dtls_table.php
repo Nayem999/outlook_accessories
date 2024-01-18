@@ -16,9 +16,9 @@ return new class extends Migration
             $table->integer('inquire_id')->default(0);
             $table->integer('product_id')->default(0);
             $table->string('style',100)->nullable();
-            $table->integer('size_id')->default(0);
-            $table->integer('color_id')->default(0);
-            $table->integer('unit_id')->default(0);
+            $table->integer('size_id')->nullable()->default(0);
+            $table->integer('color_id')->nullable()->default(0);
+            $table->integer('unit_id')->nullable()->default(0);
             $table->integer('qnty')->default(0);
             $table->string('file_image',200)->nullable();
             $table->string('remarks',200)->nullable();
