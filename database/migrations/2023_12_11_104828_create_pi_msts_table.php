@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('pi_date')->nullable();
             $table->date('pi_validity_date')->nullable();
             $table->date('last_shipment_date')->nullable();
+            $table->integer('currency_id')->nullable()->default(0);
             $table->string('remarks',200)->nullable();
             $table->float('pi_value')->default(0)->nullable();
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');

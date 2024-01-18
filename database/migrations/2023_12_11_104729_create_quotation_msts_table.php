@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('quotation_type')->default(0)->nullable()->comment('1=Inquire,2=Order');
             $table->integer('order_inquire_id')->default(0)->nullable();
             $table->date('quotation_date')->nullable();
+            $table->integer('currency_id')->nullable()->default(0);
             $table->string('remarks',200)->nullable();
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');
             $table->integer('created_by')->default(0);

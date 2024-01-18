@@ -121,7 +121,13 @@ trait Helper
 
     public static function getCurrencyList()
     {
-        $data = array(1 => 'USD', 2 => 'BDT');
+        $data = array(1 => 'USD', 2 => 'BDT', 3 => "EURO", 4 => "Pound", 5 => "YEN");
+        return $data;
+    }
+
+    public static function getCurrencySignList()
+    {
+        $data = array(1 => '$', 2 => '৳', 3 => '€', 4 => '£', 5 => '¥');
         return $data;
     }
 

@@ -21,7 +21,7 @@ class ReportController extends Controller
     public function indexAction()
     {
         $startDate = Carbon::now()->subDays(30)->startOfDay();
-        $monthDate = Carbon::now()->subMonths(6)->startOfDay();
+        $monthDate = Carbon::now()->subMonths(12)->startOfDay();
         $endDate = Carbon::now()->endOfDay();
 
         $response['status'] = 'success';
@@ -34,14 +34,22 @@ class ReportController extends Controller
         $response['current_lc'] = Lc::where('active_status', 1)->count() - $response['mature_lc'];
 
         // $response['trans_type_list'] = self::getTransTypeList();
-        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
+        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b') as month"))
+            ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
+            ->whereBetween('created_at', [$monthDate, $endDate])
+            ->groupBy('month')->get();
+        $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b') as month"))
+            ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
+            ->whereBetween('created_at', [$monthDate, $endDate])
+            ->groupBy('month')->get();
+      /*   $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get();
         $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
             ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
-            ->groupBy('month')->get();
+            ->groupBy('month')->get(); */
 
         $response['category_wise_expense'] = Transaction::select('trans_purpose_id', DB::raw('SUM(amount) as total_amount'))
             ->where('active_status', 1)->where('trans_page', 1)->where('trans_type_id', 2)

@@ -19,6 +19,7 @@ class WoController extends Controller
         $response['company_list'] = self::getPartyList(1);
         $response['buyer_list'] = self::getPartyList(2);
         $response['supplier_list'] = self::getPartyList(3);
+        $response['currency_list'] = self::getCurrencyList();
         $response['product_list'] = self::getProductList();
         $response['color_list'] = self::getColorList();
         $response['size_list'] = self::getSizeList();
@@ -69,6 +70,7 @@ class WoController extends Controller
             'order_id' => "required|numeric",
             'wo_date' => "required|date",
             'delivery_req_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -86,6 +88,7 @@ class WoController extends Controller
             'order_id' => $request->order_id,
             'delivery_req_date' => $request->delivery_req_date,
             'wo_date' => $request->wo_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
             'created_by' => $user_id,
             'uuid' => Str::uuid()->toString(),
@@ -137,7 +140,6 @@ class WoController extends Controller
 
     public function update(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'company_id' => "required|numeric",
             'buyer_id' => "required|numeric",
@@ -145,6 +147,7 @@ class WoController extends Controller
             'order_id' => "required|numeric",
             'wo_date' => "required|date",
             'delivery_req_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
 
@@ -164,6 +167,7 @@ class WoController extends Controller
             'order_id' => $request->order_id,
             'delivery_req_date' => $request->delivery_req_date,
             'wo_date' => $request->wo_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
         ];
         $request_data['updated_by'] = $user_id;
@@ -271,6 +275,8 @@ class WoController extends Controller
         if ($data) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
+            $response['currency_list'] = self::getCurrencyList();
+            $response['currency_sign_list'] = self::getCurrencySignList();
             $response['response_data'] = $data;
             return response($response, 200);
         } else {

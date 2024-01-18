@@ -295,7 +295,7 @@ class OrderController extends Controller
             'active_status' => 2,
             'updated_by' => Auth()->user()->id,
         ]);
-        $update_dtls = Order_dtl::where('inquire_id', $data->id)->where('active_status', 1)->update([
+        $update_dtls = Order_dtl::where('order_id', $data->id)->where('active_status', 1)->update([
             'active_status' => 2,
             'updated_by' => Auth()->user()->id,
         ]);

@@ -18,6 +18,7 @@ class QuotationController extends Controller
         $response['company_list'] = self::getPartyList(1);
         $response['buyer_list'] = self::getPartyList(2);
         $response['quotation_type'] = self::getQuotationList();
+        $response['currency_list'] = self::getCurrencyList();
         $response['product_list'] = self::getProductList();
         $response['color_list'] = self::getColorList();
         $response['size_list'] = self::getSizeList();
@@ -65,6 +66,7 @@ class QuotationController extends Controller
             'quotation_type' => "required|numeric",
             'order_inquire_id' => "required|numeric",
             'quotation_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -81,6 +83,7 @@ class QuotationController extends Controller
             'quotation_type' => $request->quotation_type,
             'order_inquire_id' => $request->order_inquire_id,
             'quotation_date' => $request->quotation_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
             'created_by' => $user_id,
             'uuid' => Str::uuid()->toString(),
@@ -138,6 +141,7 @@ class QuotationController extends Controller
             'quotation_type' => "required|numeric",
             'order_inquire_id' => "required|numeric",
             'quotation_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
 
@@ -156,6 +160,7 @@ class QuotationController extends Controller
             'quotation_type' => $request->quotation_type,
             'order_inquire_id' => $request->order_inquire_id,
             'quotation_date' => $request->quotation_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
         ];
         $request_data['updated_by'] = $user_id;
@@ -275,6 +280,8 @@ class QuotationController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['quotation_type'] = self::getQuotationList();
+            $response['currency_list'] = self::getCurrencyList();
+            $response['currency_sign_list'] = self::getCurrencySignList();
             $response['response_data'] = $data;
             return response($response, 200);
         } else {

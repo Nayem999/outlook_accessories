@@ -327,6 +327,7 @@ class LcController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
+            $response['currency_sign_list'] = self::getCurrencySignList();
             return response($response, 200);
         } else {
             $response['status'] = 'error';

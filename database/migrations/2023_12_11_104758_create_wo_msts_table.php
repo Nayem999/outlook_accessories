@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('wo_no',100)->nullable();
             $table->integer('supplier_id')->default(0);
             $table->integer('order_id')->default(0);
+            $table->integer('currency_id')->nullable()->default(0);
             $table->date('wo_date')->nullable();
             $table->date('delivery_req_date')->nullable();
             $table->string('remarks',200)->nullable();

@@ -18,6 +18,7 @@ class PiController extends Controller
     {
         $response['status'] = 'success';
         $response['message'] = 'Data found.';
+        $response['currency_list'] = self::getCurrencyList();
         $response['company_list'] = self::getPartyList(1);
         $response['buyer_list'] = self::getPartyList(2);
         $response['bank_list'] = Bank::select('id', 'name')->where('active_status', 1)->get();
@@ -73,6 +74,7 @@ class PiController extends Controller
             'pi_date' => "required|date",
             'pi_validity_date' => "required|date",
             'last_shipment_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -90,6 +92,7 @@ class PiController extends Controller
             'pi_date' => $request->pi_date,
             'pi_validity_date' => $request->pi_validity_date,
             'last_shipment_date' => $request->last_shipment_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
             'created_by' => $user_id,
             'uuid' => Str::uuid()->toString(),
@@ -156,6 +159,7 @@ class PiController extends Controller
             'pi_date' => "required|date",
             'pi_validity_date' => "required|date",
             'last_shipment_date' => "required|date",
+            'currency_id' => "required|numeric",
             'remarks' => "nullable|string|max:200",
         ]);
 
@@ -175,6 +179,7 @@ class PiController extends Controller
             'pi_date' => $request->pi_date,
             'pi_validity_date' => $request->pi_validity_date,
             'last_shipment_date' => $request->last_shipment_date,
+            'currency_id' => $request->currency_id,
             'remarks' => $request->remarks,
         ];
         $request_data['updated_by'] = $user_id;
@@ -290,6 +295,8 @@ class PiController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
+            $response['currency_list'] = self::getCurrencyList();
+            $response['currency_sign_list'] = self::getCurrencySignList();
             return response($response, 200);
         } else {
             $response['status'] = 'error';
