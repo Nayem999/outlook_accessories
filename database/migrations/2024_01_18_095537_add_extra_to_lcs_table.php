@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('lcs', function (Blueprint $table) {
-            $table->longText('additional_info',100)->nullable()->after('remarks');
+            $table->longText('additional_remarks',100)->nullable()->after('remarks');
         });
     }
 

@@ -84,6 +84,7 @@ class LcController extends Controller
             'last_shipment_date' => "nullable|date",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
             'remarks' => "nullable|string|max:200",
+            'additional_remarks' => "nullable|string",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -115,6 +116,7 @@ class LcController extends Controller
             'port_of_discharge' => $request->port_of_discharge,
             'last_shipment_date' => $request->last_shipment_date,
             'remarks' => $request->remarks,
+            'additional_remarks' => $request->additional_remarks,
             'created_by' => $user_id,
             'uuid' => Str::uuid()->toString(),
             'lc_no' => self::get_system_no('lcs', 'LC'),
@@ -186,6 +188,7 @@ class LcController extends Controller
             'last_shipment_date' => "nullable|date",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
             'remarks' => "nullable|string|max:200",
+            'additional_remarks' => "nullable|string",
         ]);
 
         if ($validator->fails()) {
@@ -219,6 +222,7 @@ class LcController extends Controller
             'port_of_discharge' => $request->port_of_discharge,
             'last_shipment_date' => $request->last_shipment_date,
             'remarks' => $request->remarks,
+            'additional_remarks' => $request->additional_remarks,
         ];
         $request_data['updated_by'] = $user_id;
         if ($files = $request->file("file_image")) {
