@@ -31,4 +31,5 @@ class Wo_mst extends Model
     {
         return $this->HasMany(Wo_dtl::class,'wo_id')->where('active_status', 1);
     }
+
 }

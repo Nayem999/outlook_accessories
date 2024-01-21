@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
+
 
 class Goods_issue_dtl extends Model
 {
@@ -25,5 +28,14 @@ class Goods_issue_dtl extends Model
     public function unit_info(): BelongsTo
     {
         return $this->belongsTo(Unit::class,'unit_id','id')->select('id', 'name');
+    }
+
+    public function gd_issue_info(): HasOne
+    {
+        return $this->hasOne(Goods_issue_dtl::class, 'order_dtls_id', 'order_dtls_id')->select('order_dtls_id', DB::raw('SUM(qnty) as gd_issue_qnty'))->where('active_status', 1)->groupBy('order_dtls_id');
+    }
+    public function order_dtls_info(): BelongsTo
+    {
+        return $this->belongsTo(Order_dtl::class,'order_dtls_id','id')->select('id', 'qnty');
     }
 }

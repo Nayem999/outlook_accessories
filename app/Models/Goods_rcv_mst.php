@@ -11,16 +11,17 @@ class Goods_rcv_mst extends Model
 {
     use HasFactory;
     protected $guarded = [];
-        public function supplier_info(): BelongsTo
+    public function supplier_info(): BelongsTo
     {
-        return $this->belongsTo(Party::class,'supplier_id','id')->select('id', 'name');;
+        return $this->belongsTo(Party::class, 'supplier_id', 'id')->select('id', 'name');;
     }
     public function wo_info(): BelongsTo
     {
-        return $this->belongsTo(Wo_mst::class,'wo_id','id')->select('id','wo_no');
+        return $this->belongsTo(Wo_mst::class, 'wo_id', 'id')->select('id', 'wo_no');
     }
     public function data_dtls(): HasMany
     {
-        return $this->HasMany(Goods_rcv_dtl::class,'goods_rcv_id')->where('active_status', 1);
+        return $this->HasMany(Goods_rcv_dtl::class, 'goods_rcv_id')->where('active_status', 1);
     }
+
 }

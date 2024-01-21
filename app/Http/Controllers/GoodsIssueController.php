@@ -257,7 +257,7 @@ class GoodsIssueController extends Controller
     public function getGdIssueInfo($uuid)
     {
         // $data = Goods_issue_mst::where('id', $request->id)->first();
-        $data = Goods_issue_mst::where('uuid', $uuid)->with(['company_info','buyer_info','order_info','data_dtls.product_info','data_dtls.color_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info'])->where('active_status', 1)->first();
+        $data = Goods_issue_mst::where('uuid', $uuid)->with(['company_info','buyer_info','order_info','data_dtls.product_info','data_dtls.color_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info','data_dtls.gd_issue_info','data_dtls.order_dtls_info'])->where('active_status', 1)->first();
         // $data_dtls = Goods_issue_dtl::where('goods_issue_id', $request->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {

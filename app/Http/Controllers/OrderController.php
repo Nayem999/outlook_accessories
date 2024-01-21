@@ -315,7 +315,7 @@ class OrderController extends Controller
 
     public function getOrderInfo($uuid)
     {
-        $data = Order_mst::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'inquire_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info'])->where('active_status', 1)->first();
+        $data = Order_mst::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'inquire_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info', 'data_dtls.gd_issue_info'])->where('active_status', 1)->first();
         // $data_dtls = Order_dtl::where('order_id', $data_mst->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {

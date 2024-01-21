@@ -269,7 +269,7 @@ class WoController extends Controller
 
     public function getWoInfo($uuid)
     {
-        $data = Wo_mst::where('uuid', $uuid)->with(['supplier_info', 'company_info', 'buyer_info', 'buyer_info', 'order_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info'])->where('active_status', 1)->first();
+        $data = Wo_mst::where('uuid', $uuid)->with(['supplier_info', 'company_info', 'buyer_info', 'buyer_info', 'order_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info', 'data_dtls.gd_rcv_info'])->where('active_status', 1)->first();
         // $data_dtls = Wo_dtl::where('wo_id', $data_mst->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {

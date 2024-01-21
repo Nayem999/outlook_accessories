@@ -245,7 +245,7 @@ class GoodsRcvController extends Controller
 
     public function getGdRcvInfo($uuid)
     {
-        $data = Goods_rcv_mst::where('uuid', $uuid)->with(['supplier_info','wo_info','data_dtls.product_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info'])->where('active_status', 1)->first();
+        $data = Goods_rcv_mst::where('uuid', $uuid)->with(['supplier_info','wo_info','data_dtls.product_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info','data_dtls.gd_rcv_info','data_dtls.wo_dtls_info'])->where('active_status', 1)->first();
         // $data_dtls = Goods_rcv_dtl::where('goods_rcv_id', $request->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {
