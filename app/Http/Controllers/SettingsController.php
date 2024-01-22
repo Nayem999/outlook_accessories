@@ -16,11 +16,29 @@ class SettingsController extends Controller
     public function index()
     {
 
-        $data = Settings::where('active_status',1)->first();
+        $data = Settings::where('active_status', 1)->first();
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
+
+            if ($data->signature) {
+                $path = public_path($data->signature);
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $image_signature = file_get_contents($path);
+                if ($image_signature !== false) {
+                    $image_signature = 'data:image/' . $type . ';base64,' . base64_encode($image_signature);
+                    $data['image_signature'] = $image_signature;
+                }
+            }
+            $path = public_path('uploads/logo/logo_outlook_watermark.png');
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $image_logo = file_get_contents($path);
+            if ($image_logo !== false) {
+                $image_logo = 'data:image/' . $type . ';base64,' . base64_encode($image_logo);
+                $data['image_logo_watermark'] = $image_logo;
+            }
+
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
@@ -69,7 +87,7 @@ class SettingsController extends Controller
             $request_data['signature'] = $attachment;
         }
 
-        $data = Settings::where('active_status',1)->first();
+        $data = Settings::where('active_status', 1)->first();
 
         if ($data) {
             $data->update($request_data);
@@ -82,5 +100,4 @@ class SettingsController extends Controller
             return response($response, 422);
         }
     }
-
 }

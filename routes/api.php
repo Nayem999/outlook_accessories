@@ -249,7 +249,7 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::post('order_details_rpt', [ReportController::class, 'order_details_rpt']);
         Route::post('expenses_history_rpt', [ReportController::class, 'expenses_history_rpt']);
         Route::post('party_laser_rpt', [ReportController::class, 'party_laser_rpt']);
-        Route::get('party_laser_details_rpt/{id}', [ReportController::class, 'party_laser_details_rpt']);
+        Route::get('party_laser_details_rpt/{uuid}', [ReportController::class, 'party_laser_details_rpt']);
     });
 });
 

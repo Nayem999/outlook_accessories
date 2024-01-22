@@ -42,7 +42,7 @@ class ReportController extends Controller
             ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get();
-      /*   $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
+        /*   $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get();
@@ -59,9 +59,17 @@ class ReportController extends Controller
         return response($response, 200);
     }
 
-    public function type_wise_party_list($type_id)
+    public function type_wise_party_list($type_id = 0)
     {
-        $response = self::getPartyList($type_id);
+        if ($type_id) {
+            $response = self::getPartyList($type_id);
+        } else {
+            $response['company_list'] = self::getPartyList(1);
+            $response['buyer_list'] = self::getPartyList(2);
+            $response['supplier_list'] = self::getPartyList(3);
+            $response['employee_list'] = self::getPartyList(4);
+            $response['others_list'] = self::getPartyList(4);
+        }
         return response($response, 200);
     }
 
@@ -133,18 +141,18 @@ class ReportController extends Controller
             'order_dtls.style',
             'sizes.name as size_name',
             'colors.name as color_name',
+            'order_dtls.qnty as po_qnty',
             'order_dtls.file_image as attachment_file',
             'c.name as supplier_name',
             'order_msts.order_date',
             'order_msts.delivery_req_date',
             'order_dtls.qnty',
-            'order_msts.delivery_req_date',
             'pi_msts.pi_no',
             'order_dtls.order_status',
             'order_dtls.remarks',
             DB::raw('SUM(pi_dtls.amount) as pi_amount'),
-            DB::raw('SUM(wo_dtls.qnty) as wo_qnty'),
-            DB::raw('SUM(pi_dtls.amount) as pi_amount'),
+            DB::raw('SUM(pi_dtls.qnty) as pi_qnty'),
+            DB::raw('SUM(wo_dtls.amount) as wo_amount'),
             DB::raw('SUM(wo_dtls.qnty) as wo_qnty')
         )
             ->join('parties as a', 'order_msts.company_id', '=', 'a.id')
@@ -178,7 +186,7 @@ class ReportController extends Controller
             })
             ->where('order_msts.active_status', 1)
             ->orderByDesc('order_msts.id')
-            ->groupBy('id', 'company_name', 'buyer_name', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'qnty', 'delivery_req_date', 'pi_no', 'order_status', 'remarks');
+            ->groupBy('id', 'company_name', 'buyer_name', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'order_dtls.qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'qnty', 'pi_no', 'order_status', 'remarks');
 
 
         if ($request->company_id) {
@@ -196,6 +204,11 @@ class ReportController extends Controller
 
         $data = $data->paginate(self::limit($query));
 
+        /* DB::raw('(SELECT SUM(amount) FROM pi_dtls WHERE pi_dtls.order_id = order_msts.id AND pi_dtls.active_status = 1) as pi_amount'),
+            DB::raw('(SELECT SUM(qnty) FROM pi_dtls WHERE pi_dtls.order_id = order_msts.id AND pi_dtls.active_status = 1) as pi_qnty'),
+            DB::raw('(SELECT SUM(amount) FROM wo_dtls WHERE wo_dtls.order_id = order_msts.id AND wo_dtls.active_status = 1) as wo_amount'),
+            DB::raw('(SELECT SUM(qnty) FROM wo_dtls WHERE wo_dtls.order_id = order_msts.id AND wo_dtls.active_status = 1) as wo_qnty') */
+
         if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
@@ -212,32 +225,40 @@ class ReportController extends Controller
     public function expenses_history_rpt(Request $request)
     {
         $query = $request->all();
+        $party_type_id = $request->party_type_id;
+        $party_id = $request->party_id;
+        $puspose_id = $request->puspose_id;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        // ->where('transactions.party_type_id', 4)
+
         $data = Transaction::with('trans_purpose_info', 'party_info', 'bank_info')
             ->where('transactions.trans_page', 1)
             ->where('transactions.trans_type_id', 2)
-            ->where('transactions.party_type_id', 4)
             ->where('transactions.active_status', 1)
-            ->orderByDesc('transactions.date');
-
-        if ($request->party_id) {
-            $data = $data->where('transactions.party_id', $request->party_id);
-        }
-        if ($request->puspose_id) {
-            $data = $data->where('transactions.trans_purpose_id', $request->puspose_id);
-        }
-        if ($request->start_date) {
-            $data = $data->whereDate('transactions.date', '>=', $request->start_date);
-        }
-        if ($request->end_date) {
-            $data = $data->whereDate('transactions.date', '<=', $request->end_date);
-        }
-
-        $data = $data->paginate(self::limit($query));
+            ->when($party_type_id, function ($query) use ($party_type_id) {
+                $query->where('transactions.party_type_id', $party_type_id);
+            })
+            ->when($party_id, function ($query) use ($party_id) {
+                $query->where('transactions.party_id', $party_id);
+            })
+            ->when($puspose_id, function ($query) use ($puspose_id) {
+                $query->where('transactions.trans_purpose_id', $puspose_id);
+            })
+            ->when($start_date, function ($query) use ($start_date) {
+                $query->whereDate('transactions.date', '>=',  $start_date);
+            })
+            ->when($end_date, function ($query) use ($end_date) {
+                $query->whereDate('transactions.date', '<=', $end_date);
+            })
+            ->orderByDesc('transactions.date')
+            ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['trans_method_list'] = self::getTransMethodAllList();
+            $response['party_type_list'] = self::getPartyTypeList();
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
@@ -302,7 +323,7 @@ class ReportController extends Controller
                     $pi_val_after_gd_issue = 0;
                 }
 
-                $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Receivable', 'balance_amount' => $pi_val_after_gd_issue - $trans_balance);
+                $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Receivable', 'balance_amount' => $pi_val_after_gd_issue - $trans_balance, 'party_uuid' => $row->uuid);
             } else if ($row->party_type_id == 3) {
 
                 $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
@@ -325,15 +346,15 @@ class ReportController extends Controller
                     $wo_val_after_gd_rcv = 0;
                 }
 
-                $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Payable', 'balance_amount' => $wo_val_after_gd_rcv - $trans_balance);
+                $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Payable', 'balance_amount' => $wo_val_after_gd_rcv - $trans_balance, 'party_uuid' => $row->uuid);
             } else {
 
                 if ($trans_balance > 0) {
-                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Payable', 'balance_amount' => $trans_balance);
+                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Payable', 'balance_amount' => $trans_balance, 'party_uuid' => $row->uuid);
                 } else if ($trans_balance < 0) {
-                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Receivable', 'balance_amount' => abs($trans_balance));
+                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Receivable', 'balance_amount' => abs($trans_balance), 'party_uuid' => $row->uuid);
                 } else {
-                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Close', 'balance_amount' => $trans_balance);
+                    $data[] = array('party_type' => $row->party_type_id, 'party_name' => $row->name, 'account_type' => 'Account Close', 'balance_amount' => $trans_balance, 'party_uuid' => $row->uuid);
                 }
             }
         }
@@ -351,11 +372,10 @@ class ReportController extends Controller
         }
     }
 
-    public function party_laser_details_rpt($party_id)
+    public function party_laser_details_rpt($party_uuid)
     {
-        $party_id = $party_id;
 
-        $party_data = Party::where('active_status', 1)->where('id', $party_id)->first();
+        $party_data = Party::where('active_status', 1)->where('uuid', $party_uuid)->first();
         $party_id = $party_data->id;
         $party_type_id = $party_data->party_type_id;
 
@@ -476,7 +496,6 @@ class ReportController extends Controller
         }
     }
 
-
     public static function limit($query)
     {
         $paginate = 10;
@@ -485,7 +504,6 @@ class ReportController extends Controller
                 $paginate = $query['limit'];
             }
         }
-
         return $paginate;
     }
 }
