@@ -96,7 +96,7 @@ class BankController extends Controller
         $data = Bank::create($request_data);
 
         $trans_data = $bank_trans_update = true;
-        if ($data && $request->opening_balance) {
+        if ($request->opening_balance > 0) {
             $request_trans_data = [
                 'trans_page' => 3,
                 'trans_type_id' => 1,
@@ -211,8 +211,8 @@ class BankController extends Controller
             ->with('bank_info:id,name', 'party_info:id,name', 'trans_purpose_info:id,name')
             ->when($search, function ($query) use ($search) {
                 $query->join('parties', 'transactions.party_id', '=', 'parties.id')
-                ->join('banks', 'transactions.bank_id', '=', 'banks.id')
-                ->leftJoin('trans_purposes', 'transactions.trans_purpose_id', '=', 'trans_purposes.id')
+                    ->join('banks', 'transactions.bank_id', '=', 'banks.id')
+                    ->leftJoin('trans_purposes', 'transactions.trans_purpose_id', '=', 'trans_purposes.id')
                     ->where(function ($query) use ($search) {
                         $query->where('parties.name', 'LIKE', '%' . $search . '%')
                             ->orWhere('trans_purposes.name', 'LIKE', '%' . $search . '%')

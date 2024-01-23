@@ -84,6 +84,7 @@ class TransactionController extends Controller
             'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/ ",
             'date' => "nullable|date|max:100",
             'note' => "nullable|string|max:200",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -95,6 +96,11 @@ class TransactionController extends Controller
         $request_data = $request->all();
         $request_data['uuid'] = Str::uuid()->toString();
         $request_data['created_by'] = auth()->user()->id;
+        if ($files = $request->file("file_image")) {
+            $path = 'transaction';
+            $attachment = self::uploadImage($files, $path);
+            $request_data['file_image'] = $attachment;
+        }
         if ($request->trans_method_id == 2 && $request->trans_type_id == 1) {
             $request_data['approval_status'] = 2;
         }
@@ -124,6 +130,7 @@ class TransactionController extends Controller
             'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/ ",
             'date' => "nullable|date|max:100",
             'note' => "nullable|string|max:200",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif",
             'uuid' => "required",
         ]);
 
@@ -136,6 +143,13 @@ class TransactionController extends Controller
         }
         $request_data = $request->all();
         $request_data['updated_by'] = Auth()->user()->id;
+        unset($request_data['file_image']);
+        if ($files = $request->file("file_image")) {
+            $path = 'transaction';
+            $attachment = self::uploadImage($files, $path);
+            $request_data['file_image'] = $attachment;
+        }
+
         $data = Transaction::where('uuid', $request->uuid);
         $data = $data->first();
 

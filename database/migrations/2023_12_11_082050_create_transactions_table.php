@@ -25,6 +25,7 @@ return new class extends Migration
             $table->float('amount',8,2)->default(0);
             $table->date('date')->nullable();
             $table->string('note',200)->nullable();
+            $table->string('file_image',200)->nullable();
             $table->tinyInteger('active_status')->default(1)->comment('1=active,2=deactive');
             $table->integer('created_by')->default(0);
             $table->integer('updated_by')->default(0);

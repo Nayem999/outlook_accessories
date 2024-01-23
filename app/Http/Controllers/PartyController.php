@@ -16,7 +16,7 @@ class PartyController extends Controller
         // dd($request->all());
         $query = $request->all();
         $search = $request->input('search');
-        $data = Party::orderBy('id', 'desc')->where('active_status',1);
+        $data = Party::orderBy('id', 'desc')->where('active_status', 1);
         if ($search) {
             $data = $data->where(function ($query) use ($search) {
                 $query->where('parties.name', 'LIKE', '%' . $search . '%')
@@ -78,8 +78,7 @@ class PartyController extends Controller
         DB::beginTransaction();
         $data = Party::create($request_data);
         $trans_data = $party_trans_update = true;
-        if($data && $request->account_type && $request->opening_balance)
-        {
+        if ($request->account_type && $request->opening_balance > 0) {
             $request_trans_data = [
                 'trans_page' => 4,
                 'trans_type_id' => $request->account_type,
@@ -93,9 +92,8 @@ class PartyController extends Controller
                 'uuid' => Str::uuid()->toString(),
             ];
             $trans_data = Transaction::create($request_trans_data);
-            if($trans_data)
-            {
-                $party_trans_update = Party::where('id', $data->id)->update(['trans_id'=>$trans_data->id]);
+            if ($trans_data) {
+                $party_trans_update = Party::where('id', $data->id)->update(['trans_id' => $trans_data->id]);
             }
         }
 
@@ -157,7 +155,7 @@ class PartyController extends Controller
     {
         $update = Party::where('uuid', $uuid)->update([
             'active_status' => 2,
-            'updated_by'=>Auth()->user()->id,
+            'updated_by' => Auth()->user()->id,
         ]);
         if ($update) {
             $response['status'] = 'success';
@@ -170,8 +168,9 @@ class PartyController extends Controller
         }
     }
 
-    public static function getPartyInfo($uuid){
-        $data = Party::where('uuid',$uuid)->first();
+    public static function getPartyInfo($uuid)
+    {
+        $data = Party::where('uuid', $uuid)->first();
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
