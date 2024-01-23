@@ -25,20 +25,28 @@ class GoodsIssueController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Goods_issue_mst::select('goods_issue_msts.*','a.name as company_name','b.name as buyer_name')
-        ->join('parties as a', 'goods_issue_msts.company_id', '=', 'a.id')
-        ->join('parties as b', 'goods_issue_msts.buyer_id', '=', 'b.id');
-
-        if ($search) {
-            $data = $data->where(function ($query) use ($search) {
-                $query->where('goods_issue_msts.goods_issue_no', 'LIKE', '%' . $search . '%')
-                ->orWhereDate('goods_issue_msts.delivery_date', 'LIKE', '%' . $search . '%')
-                ->orWhere('goods_issue_msts.challan_no', 'LIKE', '%' . $search . '%')
-                ->orWhere('a.name', 'LIKE', '%' . $search . '%')
-                ->orWhere('b.name', 'LIKE', '%' . $search . '%');
-            });
-        }
-        $data = $data->where('goods_issue_msts.active_status', 1)->orderBy('goods_issue_msts.id', 'desc')->paginate(self::limit($query));
+        $data = Goods_issue_mst::select('goods_issue_msts.id', 'goods_issue_msts.uuid', 'goods_issue_msts.delivery_date', 'goods_issue_msts.goods_issue_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT goods_issue_dtls.style SEPARATOR', ') as style"))
+            ->join('parties as a', 'goods_issue_msts.company_id', '=', 'a.id')
+            ->join('parties as b', 'goods_issue_msts.buyer_id', '=', 'b.id')
+            ->join('goods_issue_dtls', function ($join) {
+                $join->on('goods_issue_msts.id', '=', 'goods_issue_dtls.goods_issue_id')
+                    ->where('goods_issue_dtls.active_status', 1);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('goods_issue_msts.goods_issue_no', 'LIKE', '%' . $search . '%')
+                        ->orWhereDate('goods_issue_msts.delivery_date', 'LIKE', '%' . $search . '%')
+                        ->orWhere('goods_issue_msts.challan_no', 'LIKE', '%' . $search . '%')
+                        ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('goods_issue_dtls.style', 'LIKE', "%$search%");
+                        });
+                });
+            })
+            ->groupBy('goods_issue_msts.id', 'goods_issue_msts.uuid', 'goods_issue_msts.delivery_date', 'goods_issue_msts.goods_issue_no', 'company_name', 'buyer_name')
+            ->where('goods_issue_msts.active_status', 1)->orderBy('goods_issue_msts.id', 'desc')
+            ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
@@ -257,7 +265,7 @@ class GoodsIssueController extends Controller
     public function getGdIssueInfo($uuid)
     {
         // $data = Goods_issue_mst::where('id', $request->id)->first();
-        $data = Goods_issue_mst::where('uuid', $uuid)->with(['company_info','buyer_info','order_info','data_dtls.product_info','data_dtls.color_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info','data_dtls.gd_issue_info','data_dtls.order_dtls_info'])->where('active_status', 1)->first();
+        $data = Goods_issue_mst::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'order_info', 'data_dtls.product_info', 'data_dtls.color_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.gd_issue_info', 'data_dtls.order_dtls_info'])->where('active_status', 1)->first();
         // $data_dtls = Goods_issue_dtl::where('goods_issue_id', $request->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {

@@ -34,16 +34,23 @@ class InquireController extends Controller
         $search = $request->input('search');
         $company_id = $request->input('company_id');
         $buyer_id = $request->input('buyer_id');
-        $data = Inquire_mst::select('inquire_msts.*', 'a.name as company_name', 'b.name as buyer_name')
+        $data = Inquire_mst::select('inquire_msts.id', 'inquire_msts.uuid', 'inquire_msts.inquire_date', 'inquire_msts.inquire_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT inquire_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'inquire_msts.company_id', '=', 'a.id')
             ->join('parties as b', 'inquire_msts.buyer_id', '=', 'b.id')
+            ->join('inquire_dtls', function ($join) {
+                $join->on('inquire_msts.id', '=', 'inquire_dtls.inquire_id')
+                    ->where('inquire_dtls.active_status', 1);
+            })
             ->where('inquire_msts.active_status', 1)
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('inquire_msts.inquire_no', 'LIKE', "%$search%")
                         ->orWhereDate('inquire_msts.inquire_date', 'LIKE', "%$search%")
                         ->orWhere('a.name', 'LIKE', "%$search%")
-                        ->orWhere('b.name', 'LIKE', "%$search%");
+                        ->orWhere('b.name', 'LIKE', "%$search%")
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('inquire_dtls.style', 'LIKE', "%$search%");
+                        });
                 });
             })
             ->when($company_id, function ($query) use ($company_id) {
@@ -52,8 +59,10 @@ class InquireController extends Controller
             ->when($buyer_id, function ($query) use ($buyer_id) {
                 $query->where('inquire_msts.buyer_id', $buyer_id);
             })
+            ->groupBy('inquire_msts.id', 'inquire_msts.uuid', 'inquire_msts.inquire_date', 'inquire_msts.inquire_no', 'company_name', 'buyer_name')
             ->orderBy('inquire_msts.id', 'desc')
             ->paginate(self::limit($query));
+
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
@@ -115,7 +124,7 @@ class InquireController extends Controller
         DB::beginTransaction();
         $data_mst = Inquire_mst::create($request_data);
         $data_dtls_array = [];
-        foreach ($request->data_dtls as $key=>$row) {
+        foreach ($request->data_dtls as $key => $row) {
             if ($row["product_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'inquire_id' => $data_mst->id,
@@ -211,7 +220,7 @@ class InquireController extends Controller
 
         $data_dtls_insert = [];
         $active_dtls_id = array();
-        foreach ($request->data_dtls as $key=>$row) {
+        foreach ($request->data_dtls as $key => $row) {
             if ($row["product_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'inquire_id' => $mst_id,

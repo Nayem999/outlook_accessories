@@ -31,19 +31,27 @@ class SampleController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Sample_mst::select('sample_msts.*', 'a.name as company_name', 'b.name as buyer_name')
+        $data = Sample_mst::select('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT sample_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'sample_msts.company_id', '=', 'a.id')
-            ->join('parties as b', 'sample_msts.buyer_id', '=', 'b.id');
-
-        if ($search) {
-            $data = $data->where(function ($query) use ($search) {
-                $query->where('sample_msts.sample_no', 'LIKE', '%' . $search . '%')
+            ->join('parties as b', 'sample_msts.buyer_id', '=', 'b.id')
+            ->join('sample_dtls', function ($join) {
+                $join->on('sample_msts.id', '=', 'sample_dtls.sample_id')
+                    ->where('sample_dtls.active_status', 1);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('sample_msts.sample_no', 'LIKE', '%' . $search . '%')
                     ->orWhereDate('sample_msts.sample_date', 'LIKE', '%' . $search . '%')
                     ->orWhere('a.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('b.name', 'LIKE', '%' . $search . '%');
-            });
-        }
-        $data = $data->orderBy('sample_msts.id', 'desc')->where('sample_msts.active_status', 1)->paginate(self::limit($query));
+                    ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('inquire_dtls.style', 'LIKE', "%$search%");
+                        });
+                });
+            })
+        ->groupBy('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'company_name', 'buyer_name')
+        ->orderBy('sample_msts.id', 'desc')->where('sample_msts.active_status', 1)
+        ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';

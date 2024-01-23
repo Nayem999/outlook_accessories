@@ -34,19 +34,28 @@ class WoController extends Controller
         $search = $request->input('search');
         $supplier_id = $request->input('supplier_id');
 
-        $data = Wo_mst::select('wo_msts.*', 'a.name as supplier_name')
+        $data = Wo_mst::select('wo_msts.id', 'wo_msts.uuid', 'wo_msts.wo_date', 'wo_msts.wo_no', 'a.name as supplier_name', DB::raw("group_concat(DISTINCT wo_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'wo_msts.supplier_id', '=', 'a.id')
+            ->join('wo_dtls', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('wo_msts.wo_no', 'LIKE', '%' . $search . '%')
                         ->orWhereDate('wo_msts.wo_date', 'LIKE', '%' . $search . '%')
-                        ->orWhere('a.name', 'LIKE', '%' . $search . '%');
+                        ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('wo_dtls.style', 'LIKE', "%$search%");
+                        });
                 });
             })
             ->when($supplier_id, function ($query) use ($supplier_id) {
                 $query->where('wo_msts.supplier_id', $supplier_id);
             })
-            ->orderBy('wo_msts.id', 'desc')->where('wo_msts.active_status', 1)->paginate(self::limit($query));
+            ->groupBy('wo_msts.id', 'wo_msts.uuid', 'wo_msts.wo_date', 'wo_msts.wo_no', 'supplier_name')
+            ->orderBy('wo_msts.id', 'desc')->where('wo_msts.active_status', 1)
+            ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';

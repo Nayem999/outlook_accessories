@@ -147,7 +147,7 @@ class ReportController extends Controller
 
         $data = Order_mst::select(
             'order_msts.id',
-            'order_msts.order_no',
+            'order_msts.order_no as po_no',
             'a.name as company_name',
             'b.name as buyer_name',
             'products.id as product_id',
@@ -161,7 +161,6 @@ class ReportController extends Controller
             'c.name as supplier_name',
             'order_msts.order_date',
             'order_msts.delivery_req_date',
-            'order_dtls.qnty',
             'pi_msts.pi_no',
             'order_dtls.order_status',
             'order_dtls.remarks',
@@ -245,7 +244,7 @@ class ReportController extends Controller
                 $query->where('order_dtls.style', 'like', "%$style%");
             })
             ->orderByDesc('order_msts.id', 'products.id')
-            ->groupBy('id', 'order_no', 'company_name', 'buyer_name', 'product_id', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'order_dtls.qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'qnty',  'order_status', 'remarks', 'pi_no', 'pi_amount', 'pi_qnty', 'wo_no', 'wo_amount', 'wo_qnty', 'goods_rcv_no', 'goods_rcv_qnty', 'goods_issue_no',  'goods_issue_qnty')
+            ->groupBy('id', 'po_no', 'company_name', 'buyer_name', 'product_id', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'po_qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'order_status', 'remarks', 'pi_no', 'pi_amount', 'pi_qnty', 'wo_no', 'wo_amount', 'wo_qnty', 'goods_rcv_no', 'goods_rcv_qnty', 'goods_issue_no',  'goods_issue_qnty')
             ->paginate(self::limit($query));
 
         /* DB::raw('SUM(wo_dtls.amount) as wo_amount'),

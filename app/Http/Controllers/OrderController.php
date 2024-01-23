@@ -35,15 +35,22 @@ class OrderController extends Controller
         $company_id = $request->input('company_id');
         $buyer_id = $request->input('buyer_id');
 
-        $data = Order_mst::select('order_msts.*', 'a.name as company_name', 'b.name as buyer_name')
+        $data = Order_mst::select('order_msts.id', 'order_msts.uuid', 'order_msts.order_date', 'order_msts.order_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT order_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'order_msts.company_id', '=', 'a.id')
             ->join('parties as b', 'order_msts.buyer_id', '=', 'b.id')
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('order_msts.order_no', 'LIKE', "%$search%")
                         ->orWhereDate('order_msts.order_date', 'LIKE', "%$search%")
                         ->orWhere('a.name', 'LIKE', "%$search%")
-                        ->orWhere('b.name', 'LIKE', "%$search%");
+                        ->orWhere('b.name', 'LIKE', "%$search%")
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('order_dtls.style', 'LIKE', "%$search%");
+                        });
                 });
             })
             ->when($company_id, function ($query) use ($company_id) {
@@ -52,6 +59,7 @@ class OrderController extends Controller
             ->when($buyer_id, function ($query) use ($buyer_id) {
                 $query->where('order_msts.buyer_id', $buyer_id);
             })
+            ->groupBy('order_msts.id', 'order_msts.uuid', 'order_msts.order_date', 'order_msts.order_no', 'company_name', 'buyer_name')
             ->orderBy('order_msts.id', 'desc')->where('order_msts.active_status', 1)->paginate(self::limit($query));
 
         if ($data->count() > 0) {

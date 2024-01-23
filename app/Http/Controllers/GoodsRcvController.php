@@ -24,18 +24,26 @@ class GoodsRcvController extends Controller
         $query = $request->all();
         $search = $request->input('search');
         // $data = Goods_rcv_mst::with('supplier_info')->with('wo_info');
-        $data = Goods_rcv_mst::select('goods_rcv_msts.*', 'a.name as supplier_name')
-            ->join('parties as a', 'goods_rcv_msts.supplier_id', '=', 'a.id');
 
-        if ($search) {
-            $data = $data->where(function ($query) use ($search) {
-                $query->where('goods_rcv_msts.goods_rcv_no', 'LIKE', '%' . $search . '%')
-                    ->orWhereDate('goods_rcv_msts.rcv_date', 'LIKE', '%' . $search . '%')
-                    ->orWhere('goods_rcv_msts.challan_no', 'LIKE', '%' . $search . '%')
-                    ->orWhere('a.name', 'LIKE', '%' . $search . '%');
-            });
-        }
-        $data = $data->where('goods_rcv_msts.active_status', 1)->orderBy('goods_rcv_msts.id', 'desc')->paginate(self::limit($query));
+        $data = Goods_rcv_mst::select('goods_rcv_msts.id', 'goods_rcv_msts.uuid', 'goods_rcv_msts.rcv_date', 'goods_rcv_msts.goods_rcv_no', 'a.name as supplier_name', DB::raw("group_concat(DISTINCT goods_rcv_dtls.style SEPARATOR', ') as style"))
+            ->join('parties as a', 'goods_rcv_msts.supplier_id', '=', 'a.id')
+            ->join('goods_rcv_dtls', function ($join) {
+                $join->on('goods_rcv_msts.id', '=', 'goods_rcv_dtls.goods_rcv_id')
+                    ->where('goods_rcv_dtls.active_status', 1);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('goods_rcv_msts.goods_rcv_no', 'LIKE', '%' . $search . '%')
+                        ->orWhereDate('goods_rcv_msts.rcv_date', 'LIKE', '%' . $search . '%')
+                        ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('goods_rcv_dtls.style', 'LIKE', "%$search%");
+                        });
+                });
+            })
+            ->groupBy('goods_rcv_msts.id', 'goods_rcv_msts.uuid', 'goods_rcv_msts.rcv_date', 'goods_rcv_msts.goods_rcv_no', 'supplier_name')
+            ->where('goods_rcv_msts.active_status', 1)->orderBy('goods_rcv_msts.id', 'desc')
+            ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
@@ -161,7 +169,7 @@ class GoodsRcvController extends Controller
 
         DB::beginTransaction();
         $data_mst = Goods_rcv_mst::where('id', $mst_id)->update($request_data);
-        $data_dtls_insert=[];
+        $data_dtls_insert = [];
         $data_dtls = $data_del_dtls = true;
         foreach ($request->data_dtls as $row) {
             if ($row["wo_dtls_id"] && $row["qnty"]) {
@@ -191,7 +199,7 @@ class GoodsRcvController extends Controller
         }
 
         $gdRcvDtlIds = Goods_rcv_dtl::where('goods_rcv_id', $mst_id)->where('active_status', 1)->pluck('id')->all();
-        $gdRcvDtlIdsDiffArr=array_diff($gdRcvDtlIds,$active_dtls_id);
+        $gdRcvDtlIdsDiffArr = array_diff($gdRcvDtlIds, $active_dtls_id);
         if (count($gdRcvDtlIdsDiffArr) > 0) {
             $delete_info = [
                 'active_status' => 2,
@@ -245,7 +253,7 @@ class GoodsRcvController extends Controller
 
     public function getGdRcvInfo($uuid)
     {
-        $data = Goods_rcv_mst::where('uuid', $uuid)->with(['supplier_info','wo_info','data_dtls.product_info','data_dtls.color_info','data_dtls.size_info','data_dtls.unit_info','data_dtls.gd_rcv_info','data_dtls.wo_dtls_info'])->where('active_status', 1)->first();
+        $data = Goods_rcv_mst::where('uuid', $uuid)->with(['supplier_info', 'wo_info', 'data_dtls.product_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.gd_rcv_info', 'data_dtls.wo_dtls_info'])->where('active_status', 1)->first();
         // $data_dtls = Goods_rcv_dtl::where('goods_rcv_id', $request->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->where('active_status', 1)->get();
 
         if ($data) {

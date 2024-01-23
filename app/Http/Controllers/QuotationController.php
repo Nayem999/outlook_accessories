@@ -31,19 +31,27 @@ class QuotationController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Quotation_mst::select('quotation_msts.*', 'a.name as company_name', 'b.name as buyer_name')
+        $data = Quotation_mst::select('quotation_msts.id', 'quotation_msts.uuid', 'quotation_msts.quotation_date', 'quotation_msts.quotation_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT quotation_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'quotation_msts.company_id', '=', 'a.id')
-            ->join('parties as b', 'quotation_msts.buyer_id', '=', 'b.id');
-
-        if ($search) {
-            $data = $data->where(function ($query) use ($search) {
-                $query->where('quotation_msts.quotation_no', 'LIKE', '%' . $search . '%')
+            ->join('parties as b', 'quotation_msts.buyer_id', '=', 'b.id')
+            ->join('quotation_dtls', function ($join) {
+                $join->on('quotation_msts.id', '=', 'quotation_dtls.quotation_id')
+                    ->where('quotation_dtls.active_status', 1);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('quotation_msts.quotation_no', 'LIKE', '%' . $search . '%')
                     ->orWhereDate('quotation_msts.quotation_date', 'LIKE', '%' . $search . '%')
                     ->orWhere('a.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('b.name', 'LIKE', '%' . $search . '%');
-            });
-        }
-        $data = $data->orderBy('quotation_msts.id', 'desc')->where('quotation_msts.active_status', 1)->paginate(self::limit($query));
+                    ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere(function ($query) use ($search) {
+                            $query->where('quotation_dtls.style', 'LIKE', "%$search%");
+                        });
+                });
+            })
+        ->groupBy('quotation_msts.id', 'quotation_msts.uuid', 'quotation_msts.quotation_date', 'quotation_msts.quotation_no', 'company_name', 'buyer_name')
+        ->orderBy('quotation_msts.id', 'desc')->where('quotation_msts.active_status', 1)
+        ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
