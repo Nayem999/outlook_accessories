@@ -20,8 +20,9 @@ class ServiceController extends Controller
         ->when($search, function ($query) use ($search) {
             $query->where(function ($query) use ($search) {
                 $query->where('parties.name', 'LIKE', "%$search%")
-                    ->orWhereDate('inquire_msts.service_date', 'LIKE', "%$search%")
-                    ->orWhere('trans_purposes.name', 'LIKE', "%$search%");
+                    ->orWhereDate('services.service_date', 'LIKE', "%$search%")
+                    ->orWhere('trans_purposes.name', 'LIKE', "%$search%")
+                    ->orWhere('services.amount', 'LIKE', "%$search%");
             });
         })
         ->paginate(self::limit($query));

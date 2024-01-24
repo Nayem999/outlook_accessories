@@ -41,17 +41,17 @@ class SampleController extends Controller
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('sample_msts.sample_no', 'LIKE', '%' . $search . '%')
-                    ->orWhereDate('sample_msts.sample_date', 'LIKE', '%' . $search . '%')
-                    ->orWhere('a.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('b.name', 'LIKE', '%' . $search . '%')
+                        ->orWhereDate('sample_msts.sample_date', 'LIKE', '%' . $search . '%')
+                        ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                        ->orWhere('b.name', 'LIKE', '%' . $search . '%')
                         ->orWhere(function ($query) use ($search) {
-                            $query->where('inquire_dtls.style', 'LIKE', "%$search%");
+                            $query->where('sample_dtls.style', 'LIKE', "%$search%");
                         });
                 });
             })
-        ->groupBy('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'company_name', 'buyer_name')
-        ->orderBy('sample_msts.id', 'desc')->where('sample_msts.active_status', 1)
-        ->paginate(self::limit($query));
+            ->groupBy('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'company_name', 'buyer_name')
+            ->orderBy('sample_msts.id', 'desc')->where('sample_msts.active_status', 1)
+            ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
@@ -259,7 +259,7 @@ class SampleController extends Controller
             ->leftJoin('units', 'sample_dtls.unit_id', '=', 'units.id')
             ->where('sample_dtls.sample_id', $data_mst->id)
             ->where('sample_dtls.active_status', 1)
-            ->groupBy('sample_id', 'inquire_mst_id', 'style','inquire_dtls_id', 'product_name', 'color_name', 'size_name', 'unit_name')
+            ->groupBy('sample_id', 'inquire_mst_id', 'style', 'inquire_dtls_id', 'product_name', 'color_name', 'size_name', 'unit_name')
             ->get();
 
         if ($data_mst->count() > 0) {

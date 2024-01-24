@@ -82,9 +82,9 @@ class TransactionController extends Controller
             'check_number' => "nullable|string|max:100",
             'transfer_method_id' => "nullable|numeric",
             'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/ ",
-            'date' => "nullable|date|max:100",
+            'date' => "required|date",
             'note' => "nullable|string|max:200",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif|max:5120",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,pdf|max:5120",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -128,9 +128,9 @@ class TransactionController extends Controller
             'check_number' => "nullable|string|max:100",
             'transfer_method_id' => "nullable|numeric",
             'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/ ",
-            'date' => "nullable|date|max:100",
+            'date' => "required|date",
             'note' => "nullable|string|max:200",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif|max:5120",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,pdf|max:5120",
             'uuid' => "required",
         ]);
 
