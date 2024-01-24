@@ -192,7 +192,7 @@ trait Helper
 
     public static function getModuleList()
     {
-        $data = array('Inquiry', 'Quotation', 'Sample', 'Order', 'Work Order', 'Proforma Invoice', 'Goods Receive', 'Goods Delivery', 'LC Management', 'Document Acceptance', 'Maturity', 'Bank', 'Transaction', 'User', 'Party', 'Product', 'Color', 'Size', 'Unit', 'Settings', 'Report');
+        $data = array('Inquiry', 'Quotation', 'Sample', 'Order', 'Work Order', 'Proforma Invoice', 'Goods Receive', 'Goods Delivery', 'LC Management', 'Document Acceptance', 'Maturity', 'Bank', 'Transaction', 'User', 'Party', 'Product', 'Color', 'Size', 'Unit', 'Settings', 'Report', 'Service');
         return $data;
     }
 
@@ -217,6 +217,32 @@ trait Helper
         //        unlink($path[1]);
     }
 
+
+    public static function getDatesFromRange($from_date, $to_date, $format = 'Y-m-d', $interval='P1D')
+    {
+
+        // Declare an empty array
+        $array = array();
+
+        // Variable that store the date interval
+        // of period 1 day
+        $interval = new DateInterval($interval);
+
+        $realEnd = new DateTime($to_date);
+        //add 1 (day or month or year)
+        // $realEnd->add($interval);
+
+        $period = new DatePeriod(new DateTime($from_date), $interval, $realEnd);
+
+        // Use loop to store date into array
+        foreach ($period as $key => $date) {
+            $array[] = $date->format($format);
+        }
+
+        // Return the array elements
+        return $array;
+    }
+
     ######################################################################################################
     ######################################################################################################
     ######################################################################################################
@@ -231,31 +257,6 @@ trait Helper
         ];
 
         return response($response, $code);
-    }
-
-
-    public static function getDatesFromRange($from_date, $to_date, $format = 'Y-m-d')
-    {
-
-        // Declare an empty array
-        $array = array();
-
-        // Variable that store the date interval
-        // of period 1 day
-        $interval = new DateInterval('P1D');
-
-        $realEnd = new DateTime($to_date);
-        $realEnd->add($interval);
-
-        $period = new DatePeriod(new DateTime($from_date), $interval, $realEnd);
-
-        // Use loop to store date into array
-        foreach ($period as $key => $date) {
-            $array[] = $date->format($format);
-        }
-
-        // Return the array elements
-        return $array;
     }
 
     public static function getDayNames($start_date, $end_date)

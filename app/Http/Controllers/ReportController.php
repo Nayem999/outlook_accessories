@@ -22,7 +22,7 @@ class ReportController extends Controller
     public function indexAction()
     {
         $startDate = Carbon::now()->subDays(30)->startOfDay();
-        $monthDate = Carbon::now()->subMonths(12)->startOfDay();
+        $monthDate = Carbon::now()->subMonths(11)->firstOfMonth();
         $endDate = Carbon::now()->endOfDay();
 
         $response['status'] = 'success';
@@ -34,12 +34,15 @@ class ReportController extends Controller
         $response['mature_lc'] = Maturity_payment::where('active_status', 1)->count();
         $response['current_lc'] = Lc::where('active_status', 1)->count() - $response['mature_lc'];
 
+
+        /* $date_range = self::getDatesFromRange($monthDate, $endDate,"M",'P1M');
+        $response['date_range'] = $date_range; */
         // $response['trans_type_list'] = self::getTransTypeList();
-        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b') as month"))
+        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%M') as month"))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get();
-        $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b') as month"))
+        $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%M') as month"))
             ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get();
@@ -63,6 +66,7 @@ class ReportController extends Controller
         }
 
         $response['category_wise_expense'] = $category_wise_expense_data;
+
 
         return response($response, 200);
     }
@@ -244,7 +248,7 @@ class ReportController extends Controller
             ->when($style, function ($query) use ($style) {
                 $query->where('order_dtls.style', 'like', "%$style%");
             })
-            ->orderByDesc('order_msts.id', 'products.id')
+            ->orderByDesc('order_msts.id', 'products.id', 'order_dtls.style')
             ->groupBy('id', 'po_no', 'company_name', 'buyer_name', 'product_id', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'po_qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'order_status', 'remarks', 'pi_no', 'pi_amount', 'pi_qnty', 'wo_no', 'wo_amount', 'wo_qnty', 'goods_rcv_no', 'goods_rcv_qnty', 'goods_issue_no',  'goods_issue_qnty')
             ->paginate(self::limit($query));
 
