@@ -82,7 +82,7 @@ class LcController extends Controller
             'port_of_loading' => "nullable|string|max:100",
             'port_of_discharge' => "nullable|string|max:100",
             'last_shipment_date' => "nullable|date",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
             'additional_remarks' => "nullable|string",
         ]);
@@ -186,7 +186,7 @@ class LcController extends Controller
             'port_of_loading' => "nullable|string|max:100",
             'port_of_discharge' => "nullable|string|max:100",
             'last_shipment_date' => "nullable|date",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
             'additional_remarks' => "nullable|string",
         ]);

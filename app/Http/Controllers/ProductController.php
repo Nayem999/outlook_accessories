@@ -45,7 +45,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => "required|unique:products,name,NULL,id,active_status,1|string|max:150",
             'code' => "nullable|string|max:60",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif|max:5120",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -80,7 +80,7 @@ class ProductController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => "required|unique:products,name,$request->id,id,active_status,1|string|max:150",
             'code' => "nullable|string|max:60",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif|max:5120",
             'uuid' => "required",
             'id' => "required",
         ]);

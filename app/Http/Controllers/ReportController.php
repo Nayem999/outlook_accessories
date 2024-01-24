@@ -85,7 +85,7 @@ class ReportController extends Controller
         return response($response, 200);
     }
 
-    public function po_wise_profit(Request $request)
+    /* public function po_wise_profit(Request $request)
     {
         $query = $request->all();
         $data = DB::table('order_msts')
@@ -139,7 +139,7 @@ class ReportController extends Controller
             $response['message'] = 'Data not found.';
             return response($response, 422);
         }
-    }
+    } */
 
     public function order_details_rpt(Request $request)
     {

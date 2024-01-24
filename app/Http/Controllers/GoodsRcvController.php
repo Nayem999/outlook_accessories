@@ -65,7 +65,7 @@ class GoodsRcvController extends Controller
             'wo_id' => "required|numeric",
             'rcv_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -141,7 +141,7 @@ class GoodsRcvController extends Controller
             'wo_id' => "required|numeric",
             'rcv_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);
 

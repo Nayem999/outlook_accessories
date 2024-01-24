@@ -88,7 +88,7 @@ class InquireController extends Controller
             'merchandiser_phone' => "nullable|string|max:30",
             'inquire_person' => "nullable|string|max:100",
             'attntion' => "nullable|string|max:100",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -124,6 +124,8 @@ class InquireController extends Controller
         DB::beginTransaction();
         $data_mst = Inquire_mst::create($request_data);
         $data_dtls_array = [];
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+        $maxSize = 2048;
         foreach ($request->data_dtls as $key => $row) {
             if ($row["product_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
@@ -139,6 +141,21 @@ class InquireController extends Controller
                 ];
                 if (is_object($request->data_dtls[$key]["image"])) {
                     $files = $row["image"];
+                    $extension = strtolower($files->getClientOriginalExtension());
+                    if (!in_array($extension, $allowedExtensions)) {
+                        DB::rollBack();
+                        $response['status'] = 'error';
+                        $response['message'] = 'Invalid file extension. Allowed extensions: ' . implode(', ', $allowedExtensions);
+                        return response($response, 422);
+                    }
+                    /* $fileSize = $files->getSize(); // in bytes
+                    $maxSizeInBytes = $maxSize * 1024; // Convert size to bytes
+                    if ($fileSize > $maxSizeInBytes) {
+                        DB::rollBack();
+                        $response['status'] = 'error';
+                        $response['message'] = 'File size exceeds the maximum allowed size: (' . $maxSize . 'KB)';
+                        return response($response, 422);
+                    } */
                     $path = 'inquire';
                     $attachment = self::uploadImage($files, $path);
                     $data_dtls_arr['file_image'] = $attachment;
@@ -183,7 +200,7 @@ class InquireController extends Controller
             'merchandiser_phone' => "nullable|string|max:30",
             'inquire_person' => "nullable|string|max:100",
             'attntion' => "nullable|string|max:100",
-            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls",
+            'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);
 
@@ -220,6 +237,8 @@ class InquireController extends Controller
 
         $data_dtls_insert = [];
         $active_dtls_id = array();
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+        $maxSize = 2048;
         foreach ($request->data_dtls as $key => $row) {
             if ($row["product_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
@@ -235,6 +254,21 @@ class InquireController extends Controller
                 $attachment = '';
                 if (is_object($request->data_dtls[$key]["image"])) {
                     $files = $row["image"];
+                    $extension = strtolower($files->getClientOriginalExtension());
+                    if (!in_array($extension, $allowedExtensions)) {
+                        DB::rollBack();
+                        $response['status'] = 'error';
+                        $response['message'] = 'Invalid file extension. Allowed extensions: ' . implode(', ', $allowedExtensions);
+                        return response($response, 422);
+                    }
+                    /* $fileSize = $files->getSize(); // in bytes
+                    $maxSizeInBytes = $maxSize * 1024; // Convert size to bytes
+                    if ($fileSize > $maxSizeInBytes) {
+                        DB::rollBack();
+                        $response['status'] = 'error';
+                        $response['message'] = 'File size exceeds the maximum allowed size: (' . $maxSize . 'KB)';
+                        return response($response, 422);
+                    } */
                     $path = 'inquire';
                     $attachment = self::uploadImage($files, $path);
                 }
