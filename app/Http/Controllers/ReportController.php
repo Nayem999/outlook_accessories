@@ -9,6 +9,7 @@ use App\Models\Maturity_payment;
 use App\Models\Order_mst;
 use App\Models\Party;
 use App\Models\Pi_mst;
+use App\Models\Service;
 use App\Models\TemporaryTbl;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -322,7 +323,7 @@ class ReportController extends Controller
         if ($request->party_type_id) {
             $party_data = $party_data->where('party_type_id', $request->party_type_id);
         } else {
-            $party_data = $party_data->whereIn('party_type_id', [1, 3, 5]);
+            $party_data = $party_data->whereIn('party_type_id', [1, 3, 4, 5]);
         }
         if ($request->party_name_id) {
             $party_data = $party_data->where('id', $request->party_name_id);
@@ -414,6 +415,22 @@ class ReportController extends Controller
 
                 $party_data[$key]['account_type'] = 'Account Payable';
                 $party_data[$key]['balance_amount'] = $wo_val_after_gd_rcv - $trans_balance;
+            } else if ($row->party_type_id == 4) {
+
+                $service_data = Service::select(
+                    DB::raw('SUM(amount) as payable_amount')
+                )
+                    ->where('party_id', $row->id)->where('active_status', 1)
+                    ->get();
+
+                if ($service_data->count() > 0) {
+                    $service_amount = $service_data[0]->payable_amount;
+                } else {
+                    $service_amount = 0;
+                }
+
+                $party_data[$key]['account_type'] = 'Account Payable';
+                $party_data[$key]['balance_amount'] = $trans_balance - $service_amount;
             } else {
 
                 if ($trans_balance > 0) {
@@ -536,6 +553,35 @@ class ReportController extends Controller
                         'trans_type' => 'Payable',
                         'dr_amount' => $row->payable_amount,
                         'cr_amount' => 0,
+                        'entry_form' => 152,
+                    ];
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+
+            if (count($trans_data_array) > 0) {
+                TemporaryTbl::insert($trans_data_array);
+            }
+        }
+
+        if ($party_type_id == 4) {
+
+            $service_data = Service::select(
+                'services.service_date',
+                DB::raw('SUM(services.amount) as payable_amount')
+            )
+                ->where('services.party_id', $party_id)->where('services.active_status', 1)
+                ->groupBy('services.service_date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($service_data as $row) {
+                if ($row->payable_amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->service_date,
+                        'trans_type' => 'Payable',
+                        'dr_amount' => 0,
+                        'cr_amount' => $row->payable_amount,
                         'entry_form' => 152,
                     ];
                     $trans_data_array[] = $trans_data_arr;

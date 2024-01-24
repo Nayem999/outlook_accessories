@@ -20,6 +20,7 @@ use App\Http\Controllers\QuotationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SampleController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\TransactionController;
@@ -123,6 +124,13 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::post('trans_purpose_add', [TransPurposeController::class, 'store']);
         Route::post('trans_purpose_update', [TransPurposeController::class, 'update']);
         Route::delete('trans_purpose_delete/{uuid}', [TransPurposeController::class, 'destroy']);
+
+        //Service
+        Route::get('service_get_all', [ServiceController::class, 'index']);
+        Route::get('service_add', [ServiceController::class, 'add']);
+        Route::post('service_add', [ServiceController::class, 'store']);
+        Route::post('service_update', [ServiceController::class, 'update']);
+        Route::delete('service_delete/{uuid}', [ServiceController::class, 'destroy']);
 
         //User
         Route::get('user_get_all', [AuthController::class, 'index']);

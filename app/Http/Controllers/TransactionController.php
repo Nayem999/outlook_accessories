@@ -73,7 +73,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'trans_type_id' => "required|numeric|max:100",
+            'trans_type_id' => "required|numeric|max:99999999",
             'party_type_id' => "required|numeric",
             'party_id' => "required|numeric",
             'trans_purpose_id' => "required|numeric",
