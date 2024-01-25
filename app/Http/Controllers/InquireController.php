@@ -80,8 +80,8 @@ class InquireController extends Controller
     {
         // dd($request->all());
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
             'inquire_date' => "required|date",
             'delivery_req_date' => "required|date",
             'merchandiser_name' => "nullable|string|max:100",
@@ -191,9 +191,9 @@ class InquireController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'mst_id' => "required|numeric",
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
+            'mst_id' => "required|numeric|max:99999999",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
             'inquire_date' => "required|date",
             'delivery_req_date' => "required|date",
             'merchandiser_name' => "nullable|string|max:100",

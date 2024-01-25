@@ -69,9 +69,9 @@ class SampleController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'inquire_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'inquire_id' => "required|numeric|max:99999999",
             'sample_date' => "required|date",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
@@ -173,10 +173,10 @@ class SampleController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'mst_id' => "required|numeric",
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'inquire_id' => "required|numeric",
+            'mst_id' => "required|numeric|max:99999999",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'inquire_id' => "required|numeric|max:99999999",
             'sample_date' => "required|date",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
@@ -309,16 +309,16 @@ class SampleController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'sample_id' => "required|numeric",
-            'inquire_mst_id' => "required|numeric",
-            'inquire_dtls_id' => "required|numeric",
-            'product_id' => "required|numeric",
+            'sample_id' => "required|numeric|max:99999999",
+            'inquire_mst_id' => "required|numeric|max:99999999",
+            'inquire_dtls_id' => "required|numeric|max:99999999",
+            'product_id' => "required|numeric|max:99999999",
             'style' => "nullable|string",
-            'size_id' => "nullable|numeric",
-            'color_id' => "nullable|numeric",
-            'unit_id' => "nullable|numeric",
-            'qnty' => "required|numeric",
-            'sample_status' => "nullable|numeric",
+            'size_id' => "nullable|numeric|max:99999999",
+            'color_id' => "nullable|numeric|max:99999999",
+            'unit_id' => "nullable|numeric|max:99999999",
+            'qnty' => "required|numeric|max:99999999",
+            'sample_status' => "nullable|numeric|max:999",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);

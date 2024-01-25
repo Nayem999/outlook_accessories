@@ -77,7 +77,7 @@ class BankController extends Controller
             'phone' => "nullable|string|max:30",
             'swift_code' => "nullable|string|max:30",
             'bin_no' => "nullable|string|max:100",
-            'opening_balance' => "nullable|numeric",
+            'opening_balance' => "nullable|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
         ]);
         if ($validator->fails()) {
             $response = [

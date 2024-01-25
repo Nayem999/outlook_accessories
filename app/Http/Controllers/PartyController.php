@@ -53,13 +53,13 @@ class PartyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => "required|string|max:100",
-            'party_type_id' => "required|numeric",
+            'party_type_id' => "required|numeric|max:999",
             'email' => "nullable|string|email|max:100",
             'phone' => "nullable|max:30",
             'address' => "nullable|max:200",
             'bin_no' => "nullable|string|max:100",
-            'account_type' => "nullable|numeric",
-            'opening_balance' => "nullable|numeric|max:999999999|regex:/^\d+(\.\d{1,2})?$/",
+            'account_type' => "nullable|numeric|max:999",
+            'opening_balance' => "nullable|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
             'contact_person_name' => "nullable|string|max:100",
             'contact_person_email' => "nullable|string|max:100",
             'contact_person_phone' => "nullable|string|max:30",
@@ -114,12 +114,11 @@ class PartyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => "required|string|max:100",
-            'party_type_id' => "required|numeric",
+            'party_type_id' => "required|numeric|max:999",
             'email' => "nullable|string|email|max:100",
             'phone' => "nullable|max:30",
             'address' => "nullable|max:200",
             'bin_no' => "nullable|string|max:100",
-            'opening_balance' => "nullable|numeric",
             'contact_person_name' => "nullable|string|max:100",
             'contact_person_email' => "nullable|string|max:100",
             'contact_person_phone' => "nullable|string|max:30",

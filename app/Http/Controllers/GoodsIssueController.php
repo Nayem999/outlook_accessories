@@ -64,9 +64,9 @@ class GoodsIssueController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'order_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'order_id' => "required|numeric|max:99999999",
             'delivery_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
@@ -142,9 +142,9 @@ class GoodsIssueController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'order_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'order_id' => "required|numeric|max:99999999",
             'delivery_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",

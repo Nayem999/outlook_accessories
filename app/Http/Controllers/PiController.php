@@ -76,13 +76,13 @@ class PiController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'bank_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'bank_id' => "required|numeric|max:99999999",
             'pi_date' => "required|date",
             'pi_validity_date' => "required|date",
             'last_shipment_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -161,13 +161,13 @@ class PiController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'bank_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'bank_id' => "required|numeric|max:99999999",
             'pi_date' => "required|date",
             'pi_validity_date' => "required|date",
             'last_shipment_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
 
@@ -317,8 +317,8 @@ class PiController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
         ]);
         if ($validator->fails()) {
             $response = [

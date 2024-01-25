@@ -60,7 +60,7 @@ class DocAcptController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'lc_id' => "required|numeric",
+            'lc_id' => "required|numeric|max:99999999",
             'lc_num' => "required|string|max:100",
             'doc_acpt_date' => "required|date",
             'maturity_date' => "nullable|date",
@@ -136,7 +136,7 @@ class DocAcptController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'lc_id' => "required|numeric",
+            'lc_id' => "required|numeric|max:99999999",
             'lc_num' => "required|string|max:100",
             'doc_acpt_date' => "required|date",
             'maturity_date' => "nullable|date",

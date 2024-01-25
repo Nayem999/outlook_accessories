@@ -61,8 +61,8 @@ class GoodsRcvController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'supplier_id' => "required|numeric",
-            'wo_id' => "required|numeric",
+            'supplier_id' => "required|numeric|max:99999999",
+            'wo_id' => "required|numeric|max:99999999",
             'rcv_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
@@ -137,8 +137,8 @@ class GoodsRcvController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'supplier_id' => "required|numeric",
-            'wo_id' => "required|numeric",
+            'supplier_id' => "required|numeric|max:99999999",
+            'wo_id' => "required|numeric|max:99999999",
             'rcv_date' => "required|date",
             'challan_no' => "nullable|string|max:200",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",

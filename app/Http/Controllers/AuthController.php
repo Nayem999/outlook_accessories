@@ -118,15 +118,15 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'role_id' => 'required|numeric',
+            'role_id' => 'required|numeric|max:999',
             'name' => 'required|string|max:100',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'gender' => 'required|numeric',
+            'gender' => 'required|numeric|max:999',
             'dob' => 'nullable',
             'phone' => 'nullable',
             'address' => 'nullable',
-            'active_status' => 'required|numeric',
+            'active_status' => 'required|numeric|max:999',
         ]);
         if ($validator->fails()) {
             return response(['errors' => $validator->errors()->all()], 422);
@@ -160,15 +160,15 @@ class AuthController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'role_id' => 'required|numeric',
+            'role_id' => 'required|numeric|max:999',
             'name' => 'required|string|max:100',
             'email' => "required|string|email|max:100|unique:users,email,$request->id",
             'password' => 'nullable|string|min:6|confirmed',
-            'gender' => 'required|numeric',
+            'gender' => 'required|numeric|max:999',
             'dob' => 'nullable',
             'phone' => 'nullable',
             'address' => 'nullable',
-            'active_status' => 'required|numeric',
+            'active_status' => 'required|numeric|max:999',
             'id' => "required",
             'uuid' => "required",
         ]);

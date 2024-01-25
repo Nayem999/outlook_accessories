@@ -73,13 +73,13 @@ class WoController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'supplier_id' => "required|numeric",
-            'order_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'supplier_id' => "required|numeric|max:99999999",
+            'order_id' => "required|numeric|max:99999999",
             'wo_date' => "required|date",
             'delivery_req_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -150,13 +150,13 @@ class WoController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'supplier_id' => "required|numeric",
-            'order_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'supplier_id' => "required|numeric|max:99999999",
+            'order_id' => "required|numeric|max:99999999",
             'wo_date' => "required|date",
             'delivery_req_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
 

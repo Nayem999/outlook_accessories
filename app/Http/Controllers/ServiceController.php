@@ -54,7 +54,7 @@ class ServiceController extends Controller
             'party_id' => "required|numeric|max:99999999",
             'purpose_id' => "required|numeric|max:99999999",
             'service_date' => "required|date",
-            'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'amount' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
         ]);
         if ($validator->fails()) {
             $response = [
@@ -87,7 +87,8 @@ class ServiceController extends Controller
             'party_id' => "required|numeric|max:99999999",
             'purpose_id' => "required|numeric|max:99999999",
             'service_date' => "required|date",
-            'amount' => "required|numeric|min:1|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'amount' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'uuid' => "required",
         ]);
         if ($validator->fails()) {
             $response = [

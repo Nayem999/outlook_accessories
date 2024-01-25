@@ -57,8 +57,8 @@ class SettingsController extends Controller
             'office_phone' => "nullable|string|max:30",
             'head_office_add' => "nullable|string|max:200",
             'head_office_phone' => "nullable|string|max:30",
-            'tin_number' => "nullable|numeric",
-            'bin_number' => "nullable|numeric",
+            'tin_number' => "nullable|string|max:50",
+            'bin_number' => "nullable|string|max:50",
             'logo' => "nullable|mimes:png,jpeg,jpg,gif",
             'signature' => "nullable|mimes:png,jpeg,jpg,gif",
         ]);

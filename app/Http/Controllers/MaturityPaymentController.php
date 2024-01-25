@@ -45,13 +45,13 @@ class MaturityPaymentController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'lc_id' => "required|numeric",
+            'lc_id' => "required|numeric|max:99999999",
             'lc_num' => "required|string|max:100",
-            'doc_acceptace_id' => "required|numeric",
+            'doc_acceptace_id' => "required|numeric|max:99999999",
             'payment_date' => "required|date",
-            'lc_value' => "required|numeric",
-            'exchange_rate' => "required|numeric",
-            'amount' => "required|numeric",
+            'lc_value' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'exchange_rate' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'amount' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -126,15 +126,15 @@ class MaturityPaymentController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'mst_id' => "required|numeric",
-            'trans_id' => "required|numeric",
-            'lc_id' => "required|numeric",
+            'mst_id' => "required|numeric|max:99999999",
+            'trans_id' => "required|numeric|max:99999999",
+            'lc_id' => "required|numeric|max:99999999",
             'lc_num' => "required|string|max:100",
-            'doc_acceptace_id' => "required|numeric",
+            'doc_acceptace_id' => "required|numeric|max:99999999",
             'payment_date' => "required|date",
-            'lc_value' => "required|numeric",
-            'exchange_rate' => "required|numeric",
-            'amount' => "required|numeric",
+            'lc_value' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'exchange_rate' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
+            'amount' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/",
             'remarks' => "nullable|string|max:200",
         ]);
 

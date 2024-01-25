@@ -69,12 +69,12 @@ class QuotationController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'quotation_type' => "required|numeric",
-            'order_inquire_id' => "required|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'quotation_type' => "required|numeric|max:999",
+            'order_inquire_id' => "required|numeric|max:99999999",
             'quotation_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
         if ($validator->fails()) {
@@ -143,13 +143,13 @@ class QuotationController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'mst_id' => "required|numeric",
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'quotation_type' => "required|numeric",
-            'order_inquire_id' => "required|numeric",
+            'mst_id' => "required|numeric|max:99999999",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'quotation_type' => "required|numeric|max:999",
+            'order_inquire_id' => "required|numeric|max:99999999",
             'quotation_date' => "required|date",
-            'currency_id' => "required|numeric",
+            'currency_id' => "required|numeric|max:999",
             'remarks' => "nullable|string|max:200",
         ]);
 

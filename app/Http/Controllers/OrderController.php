@@ -78,9 +78,9 @@ class OrderController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'inquire_id' => "nullable|numeric",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'inquire_id' => "nullable|numeric|max:99999999",
             'order_date' => "required|date",
             'delivery_req_date' => "required|date",
             'merchandiser_name' => "nullable|string|max:100",
@@ -88,7 +88,7 @@ class OrderController extends Controller
             'order_person' => "nullable|string|max:100",
             'attntion' => "nullable|string|max:100",
             'season_year' => "nullable|string|max:4",
-            'season' => "nullable|numeric",
+            'season' => "nullable|numeric|max:99999999",
             'file_image' => "nullable|mimes:png,jpeg,jpg,gif,doc,docs,pdf,xlsx,xls|max:5120",
             'remarks' => "nullable|string|max:200",
         ]);
@@ -194,10 +194,10 @@ class OrderController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'mst_id' => "required|numeric",
-            'company_id' => "required|numeric",
-            'buyer_id' => "required|numeric",
-            'inquire_id' => "nullable|numeric",
+            'mst_id' => "required|numeric|max:99999999",
+            'company_id' => "required|numeric|max:99999999",
+            'buyer_id' => "required|numeric|max:99999999",
+            'inquire_id' => "nullable|numeric|max:99999999",
             'order_date' => "required|date",
             'delivery_req_date' => "required|date",
             'merchandiser_name' => "nullable|string|max:100",
