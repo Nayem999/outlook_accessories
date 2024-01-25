@@ -141,6 +141,7 @@ class OrderController extends Controller
                     'qnty' => $row["qnty"],
                     'remarks' => $row["remark"],
                     'created_by' => $user_id,
+                    'created_at' => now(),
                 ];
                 if (is_object($request->data_dtls[$key]["image"])) {
                     $files = $row["image"];
@@ -286,11 +287,13 @@ class OrderController extends Controller
                         $data_dtls_arr['file_image'] = $attachment;
                     }
                     $data_dtls_arr['updated_by'] = $user_id;
+                    $data_dtls_arr['updated_at'] = now();
                     Order_dtl::where('id', $row["dtls_id"])->update($data_dtls_arr);
                     $active_dtls_id[] = $row["dtls_id"];
                 } else {
                     $data_dtls_arr['file_image'] = $attachment;
                     $data_dtls_arr['created_by'] = $user_id;
+                    $data_dtls_arr['created_at'] = now();
                     $data_dtls_insert[] = $data_dtls_arr;
                 }
             }
@@ -303,6 +306,7 @@ class OrderController extends Controller
             $delete_info = [
                 'active_status' => 2,
                 'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
             ];
             $data_del_dtls = Order_dtl::whereIn('id', $poDtlIdsDiffArr)->update($delete_info);
         }

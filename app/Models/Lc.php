@@ -31,4 +31,9 @@ class Lc extends Model
     {
         return $this->HasMany(Lc_pi::class, 'lc_id')->where('active_status', 1);
     }
+
+    public function contract_dtls(): HasMany
+    {
+        return $this->HasMany(Export_contract::class, 'lc_id')->where('active_status', 1);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\Doc_acpt_mst;
+use App\Models\Export_contract;
 use App\Models\Lc;
 use App\Models\Lc_pi;
 use App\Models\Maturity_payment;
@@ -64,8 +65,6 @@ class LcController extends Controller
         $validator = Validator::make($request->all(), [
             'company_id' => "required|numeric|max:99999999",
             'buyer_id' => "required|numeric|max:99999999",
-            'contract_no' => "required|string|max:100",
-            'contract_date' => "required|date",
             'letter_of_credit_no' => "nullable|string|max:100",
             'letter_of_credit_date' => "nullable|date",
             'lc_issue_date' => "required|date",
@@ -97,8 +96,6 @@ class LcController extends Controller
         $request_data = [
             'company_id' => $request->company_id,
             'buyer_id' => $request->buyer_id,
-            'contract_no' => $request->contract_no,
-            'contract_date' => $request->contract_date,
             'letter_of_credit_no' => $request->letter_of_credit_no,
             'letter_of_credit_date' => $request->letter_of_credit_date,
             'lc_issue_date' => $request->lc_issue_date,
@@ -139,6 +136,7 @@ class LcController extends Controller
                     'lc_id' => $data_mst->id,
                     'pi_mst_id' => $row["pi_mst_id"],
                     'created_by' => $user_id,
+                    'created_at' => now(),
                 ];
                 $data_dtls_array[] = $data_dtls_arr;
             }
@@ -149,7 +147,26 @@ class LcController extends Controller
             $data_dtls = Lc_pi::insert($data_dtls_array);
         }
 
-        if ($data_mst && $data_dtls) {
+        $contract_dtls_array = [];
+        foreach ($request->contract_dtls as $row) {
+            if ($row["export_contract_no"]) {
+                $contract_dtls_arr = [
+                    'lc_id' => $data_mst->id,
+                    'export_contract_no' => $row["export_contract_no"],
+                    'export_contract_date' => $row["export_contract_date"],
+                    'created_by' => $user_id,
+                    'created_at' => now(),
+                ];
+                $contract_dtls_array[] = $contract_dtls_arr;
+            }
+        }
+
+        $contract_dtls = true;
+        if (count($contract_dtls_array) > 0) {
+            $contract_dtls = Export_contract::insert($contract_dtls_array);
+        }
+
+        if ($data_mst && $data_dtls && $contract_dtls) {
             DB::commit();
             $response['status'] = 'success';
             $response['message'] = 'Data inserted successfully.';
@@ -168,8 +185,6 @@ class LcController extends Controller
         $validator = Validator::make($request->all(), [
             'company_id' => "required|max:99999999",
             'buyer_id' => "required|numeric|max:99999999",
-            'contract_no' => "required|string|max:100",
-            'contract_date' => "required|date",
             'letter_of_credit_no' => "nullable|string|max:100",
             'letter_of_credit_date' => "nullable|date",
             'lc_issue_date' => "required|date",
@@ -203,8 +218,6 @@ class LcController extends Controller
         $request_data = [
             'company_id' => $request->company_id,
             'buyer_id' => $request->buyer_id,
-            'contract_no' => $request->contract_no,
-            'contract_date' => $request->contract_date,
             'letter_of_credit_no' => $request->letter_of_credit_no,
             'letter_of_credit_date' => $request->letter_of_credit_date,
             'lc_issue_date' => $request->lc_issue_date,
@@ -234,6 +247,7 @@ class LcController extends Controller
         DB::beginTransaction();
         $data_mst = Lc::where('id', $mst_id)->update($request_data);
         $lcPiDtlIds = Lc_pi::where('lc_id', $mst_id)->where('active_status', 1)->pluck('id')->all();
+        $lcContractDtlIds = Export_contract::where('lc_id', $mst_id)->where('active_status', 1)->pluck('id')->all();
 
         $data_dtls_insert = [];
         $active_dtls_id = array();
@@ -245,10 +259,12 @@ class LcController extends Controller
                 ];
                 if ($row["dtls_id"]) {
                     $data_dtls_arr['updated_by'] = $user_id;
+                    $data_dtls_arr['updated_at'] = now();
                     Lc_pi::where('id', $row["dtls_id"])->update($data_dtls_arr);
                     $active_dtls_id[] = $row["dtls_id"];
                 } else {
                     $data_dtls_arr['created_by'] = $user_id;
+                    $data_dtls_arr['created_at'] = now();
                     $data_dtls_insert[] = $data_dtls_arr;
                 }
             }
@@ -261,6 +277,7 @@ class LcController extends Controller
             $delete_info = [
                 'active_status' => 2,
                 'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
             ];
             $data_del_dtls = Lc_pi::whereIn('id', $lcPiDtlIdsDiffArr)->update($delete_info);
         }
@@ -269,7 +286,49 @@ class LcController extends Controller
             $data_dtls = Lc_pi::insert($data_dtls_insert);
         }
 
-        if ($data_mst && $data_del_dtls && $data_dtls) {
+        #################  Export contract dtls ###############
+
+        $contract_dtls_insert = [];
+        $active_contract_dtls_id = array();
+        foreach ($request->contract_dtls as $row) {
+            if ($row["export_contract_no"]) {
+                $contract_dtls_arr = [
+                    'lc_id' => $mst_id,
+                    'export_contract_no' => $row["export_contract_no"],
+                    'export_contract_date' => $row["export_contract_date"]
+                ];
+                if ($row["dtls_id"]) {
+                    $contract_dtls_arr['updated_by'] = $user_id;
+                    $contract_dtls_arr['updated_at'] = now();
+                    Export_contract::where('id', $row["dtls_id"])->update($contract_dtls_arr);
+                    $active_contract_dtls_id[] = $row["dtls_id"];
+                } else {
+                    $contract_dtls_arr['created_by'] = $user_id;
+                    $contract_dtls_arr['created_at'] = now();
+                    $contract_dtls_insert[] = $contract_dtls_arr;
+                }
+            }
+        }
+
+        $contract_dtls = $contract_del_dtls = true;
+
+        $lcContractDtlIdsDiffArr = array_diff($lcContractDtlIds, $active_contract_dtls_id);
+        if (count($lcContractDtlIdsDiffArr) > 0) {
+            $delete_info = [
+                'active_status' => 2,
+                'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
+            ];
+            $contract_del_dtls = Export_contract::whereIn('id', $lcContractDtlIdsDiffArr)->update($delete_info);
+        }
+
+        if (count($contract_dtls_insert) > 0) {
+            $contract_dtls = Export_contract::insert($contract_dtls_insert);
+        }
+
+
+
+        if ($data_mst && $data_del_dtls && $data_dtls && $contract_del_dtls && $contract_dtls) {
             DB::commit();
             $response['status'] = 'success';
             $response['message'] = 'Data updated successfully.';
@@ -324,7 +383,7 @@ class LcController extends Controller
     public function getLcInfo($uuid)
     {
 
-        $data = Lc::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'opening_bank_info', 'advising_bank_info', 'data_dtls.pi_info', 'data_dtls.pi_info.data_dtls', 'data_dtls.pi_info.data_dtls.product_info', 'data_dtls.pi_info.data_dtls.color_info', 'data_dtls.pi_info.data_dtls.size_info', 'data_dtls.pi_info.data_dtls.unit_info'])->where('active_status', 1)->first();
+        $data = Lc::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'opening_bank_info', 'advising_bank_info', 'contract_dtls', 'data_dtls.pi_info', 'data_dtls.pi_info.data_dtls', 'data_dtls.pi_info.data_dtls.product_info', 'data_dtls.pi_info.data_dtls.color_info', 'data_dtls.pi_info.data_dtls.size_info', 'data_dtls.pi_info.data_dtls.unit_info'])->where('active_status', 1)->first();
         // $data_pi = Lc_pi::where('lc_id', $request->id)->with('pi_info')->where('active_status', 1)->get();
 
         if ($data) {

@@ -123,6 +123,7 @@ class WoController extends Controller
                     'amount' => $row["amount"],
                     'remarks' => $row["remark"],
                     'created_by' => $user_id,
+                    'created_at' => now(),
                 ];
 
                 $data_dtls_array[] = $data_dtls_arr;
@@ -205,10 +206,12 @@ class WoController extends Controller
 
                 if ($row["dtls_id"]) {
                     $data_dtls_arr['updated_by'] = $user_id;
+                    $data_dtls_arr['updated_at'] = now();
                     Wo_dtl::where('id', $row["dtls_id"])->update($data_dtls_arr);
                     $active_dtls_id[] = $row["dtls_id"];
                 } else {
                     $data_dtls_arr['created_by'] = $user_id;
+                    $data_dtls_arr['created_at'] = now();
                     $data_dtls_insert[] = $data_dtls_arr;
                 }
 
@@ -222,6 +225,7 @@ class WoController extends Controller
             $delete_info = [
                 'active_status' => 2,
                 'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
             ];
             $data_del_dtls = Wo_dtl::whereIn('id', $woDtlIdsDiffArr)->update($delete_info);
         }

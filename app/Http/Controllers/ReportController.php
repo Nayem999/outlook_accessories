@@ -175,8 +175,10 @@ class ReportController extends Controller
             'wo_dtls.amount as wo_amount',
             'wo_dtls.qnty as wo_qnty',
             'goods_rcv_msts.goods_rcv_no',
+            'goods_rcv_msts.rcv_date as goods_rcv_date',
             'goods_rcv_dtls.qnty as goods_rcv_qnty',
             'goods_issue_msts.goods_issue_no',
+            'goods_issue_msts.delivery_date as goods_issue_date',
             'goods_issue_dtls.qnty as goods_issue_qnty',
         )
             ->join('parties as a', 'order_msts.company_id', '=', 'a.id')
@@ -249,7 +251,7 @@ class ReportController extends Controller
                 $query->where('order_dtls.style', 'like', "%$style%");
             })
             ->orderByDesc('order_msts.id', 'products.id', 'order_dtls.style')
-            ->groupBy('id', 'po_no', 'company_name', 'buyer_name', 'product_id', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'po_qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'order_status', 'remarks', 'pi_no', 'pi_amount', 'pi_qnty', 'wo_no', 'wo_amount', 'wo_qnty', 'goods_rcv_no', 'goods_rcv_qnty', 'goods_issue_no',  'goods_issue_qnty')
+            ->groupBy('id', 'po_no', 'company_name', 'buyer_name', 'product_id', 'product_name', 'order_person', 'style', 'size_name', 'color_name', 'po_qnty', 'attachment_file', 'supplier_name', 'order_date', 'delivery_req_date', 'order_status', 'remarks', 'pi_no', 'pi_amount', 'pi_qnty', 'wo_no', 'wo_amount', 'wo_qnty', 'goods_rcv_no', 'goods_rcv_date', 'goods_rcv_qnty', 'goods_issue_no', 'goods_issue_date', 'goods_issue_qnty')
             ->paginate(self::limit($query));
 
         /* DB::raw('SUM(wo_dtls.amount) as wo_amount'),
@@ -346,7 +348,7 @@ class ReportController extends Controller
                 ->groupBy('party_id')->get();
 
             if ($trans_data->count() > 0) {
-                if ($row->party_type_id == 3) {
+                if ($row->party_type_id == 3 || $row->party_type_id == 4) {
                     $trans_balance = $trans_data[0]->expense_amount - $trans_data[0]->income_amount;
                 } else {
                     $trans_balance = $trans_data[0]->income_amount - $trans_data[0]->expense_amount;

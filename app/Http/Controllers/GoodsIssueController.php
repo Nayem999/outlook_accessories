@@ -115,6 +115,7 @@ class GoodsIssueController extends Controller
                     'qnty' => $row["qnty"],
                     'remarks' => $row["remark"],
                     'created_by' => $user_id,
+                    'created_at' => now(),
                 ];
                 $data_dtls_array[] = $data_dtls_arr;
             }
@@ -177,16 +178,19 @@ class GoodsIssueController extends Controller
 
         DB::beginTransaction();
         $data_mst = Goods_issue_mst::where('id', $mst_id)->update($request_data);
+        $issDtlIds = Goods_issue_dtl::where('goods_issue_id', $mst_id)->where('active_status', 1)->pluck('id')->all();
 
         $data_dtls = true;
+        $active_dtls_id=array();
         foreach ($request->data_dtls as $row) {
 
             if ($row["order_dtls_id"] && $row["dtls_id"] && $row["qnty"]) {
-
+                $active_dtls_id[] = $row["dtls_id"];
                 $data_dtls_arr = [
                     'qnty' => $row["qnty"],
                     'remarks' => $row["remark"],
                     'updated_by' => $user_id,
+                    'updated_at' => now(),
                 ];
 
                 if ($data_dtls) {
@@ -223,7 +227,19 @@ class GoodsIssueController extends Controller
             }
         }
 
-        if ($data_mst && $data_dtls) {
+        $data_del_dtls = true;
+        $issDtlIdsDiffArr = array_diff($issDtlIds, $active_dtls_id);
+        if (count($issDtlIdsDiffArr) > 0) {
+            $delete_info = [
+                'active_status' => 2,
+                'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
+            ];
+            $data_del_dtls = Goods_issue_dtl::whereIn('id', $issDtlIdsDiffArr)->update($delete_info);
+        }
+
+
+        if ($data_mst && $data_del_dtls &&$data_dtls) {
             DB::commit();
             $response['status'] = 'success';
             $response['message'] = 'Data updated successfully.';

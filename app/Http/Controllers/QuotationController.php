@@ -116,6 +116,7 @@ class QuotationController extends Controller
                     'price' => $row["price"],
                     'amount' => $row["amount"],
                     'created_by' => $user_id,
+                    'created_at' => now(),
                 ];
                 $data_dtls_array[] = $data_dtls_arr;
             }
@@ -195,10 +196,12 @@ class QuotationController extends Controller
                 ];
                 if ($row["dtls_id"]) {
                     $data_dtls_arr['updated_by'] = $user_id;
+                    $data_dtls_arr['updated_at'] = now();
                     Quotation_dtl::where('id', $row["dtls_id"])->update($data_dtls_arr);
                     $active_dtls_id[] = $row["dtls_id"];
                 } else {
                     $data_dtls_arr['created_by'] = $user_id;
+                    $data_dtls_arr['created_at'] = now();
                     $data_dtls_insert[] = $data_dtls_arr;
                 }
 
@@ -212,6 +215,7 @@ class QuotationController extends Controller
             $delete_info = [
                 'active_status' => 2,
                 'updated_by' => Auth()->user()->id,
+                'updated_at' => now()
             ];
             $data_del_dtls = Quotation_dtl::whereIn('id', $quotationDtlIdsDiffArr)->update($delete_info);
         }
