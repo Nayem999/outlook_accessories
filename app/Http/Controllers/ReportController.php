@@ -400,8 +400,9 @@ class ReportController extends Controller
             } else if ($row->party_type_id == 3) {
 
                 $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
-                    DB::raw('SUM(wo_dtls.amount) as payable_amount')
+                    DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
                 )
+
                     ->join('goods_rcv_dtls', function ($join) {
                         $join->on('goods_rcv_dtls.goods_rcv_id', '=', 'goods_rcv_msts.id')
                             ->where('goods_rcv_dtls.active_status', 1);
@@ -537,7 +538,7 @@ class ReportController extends Controller
 
             $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
                 'goods_rcv_msts.rcv_date as date',
-                DB::raw('SUM(wo_dtls.amount) as payable_amount')
+                DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
             )
                 ->join('goods_rcv_dtls', function ($join) {
                     $join->on('goods_rcv_dtls.goods_rcv_id', '=', 'goods_rcv_msts.id')
@@ -557,8 +558,8 @@ class ReportController extends Controller
                     $trans_data_arr = [
                         'date' => $row->date,
                         'trans_type' => 'Payable',
-                        'dr_amount' => $row->payable_amount,
-                        'cr_amount' => 0,
+                        'dr_amount' => 0,
+                        'cr_amount' => $row->payable_amount,
                         'entry_form' => 152,
                     ];
                     $trans_data_array[] = $trans_data_arr;
