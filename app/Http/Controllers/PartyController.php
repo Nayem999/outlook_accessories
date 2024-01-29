@@ -17,13 +17,24 @@ class PartyController extends Controller
         $query = $request->all();
         $search = $request->input('search');
         $data = Party::orderBy('id', 'desc')->where('active_status', 1);
+
         if ($search) {
             $data = $data->where(function ($query) use ($search) {
+                $party_type_arr = self::getPartyTypeList();
+
                 $query->where('parties.name', 'LIKE', '%' . $search . '%')
                     ->orWhere('parties.email', 'LIKE', '%' . $search . '%')
-                    ->orWhere('parties.phone', 'LIKE', '%' . $search . '%');
+                    ->orWhere('parties.phone', 'LIKE', '%' . $search . '%')
+                    ->orWhere('parties.contact_person_name', 'LIKE', '%' . $search . '%');
+
+                foreach ($party_type_arr as $partyTypeId => $partyTypeName) {
+                    if (stripos($partyTypeName, $search) !== false) {
+                        $query->orWhere('parties.party_type_id', $partyTypeId);
+                    }
+                }
             });
         }
+
         $data = $data->paginate(self::limit($query));
 
         if ($data->count() > 0) {

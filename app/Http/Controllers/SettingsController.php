@@ -24,6 +24,7 @@ class SettingsController extends Controller
 
             if ($data->signature) {
                 $path = public_path($data->signature);
+                // $path = base_path($data->signature);
                 $type = pathinfo($path, PATHINFO_EXTENSION);
                 $image_signature = file_get_contents($path);
                 if ($image_signature !== false) {
@@ -32,6 +33,7 @@ class SettingsController extends Controller
                 }
             }
             $path = public_path('uploads/logo/logo_outlook_watermark.png');
+            // $path = base_path('uploads/logo/logo_outlook_watermark.png');
             $type = pathinfo($path, PATHINFO_EXTENSION);
             $image_logo = file_get_contents($path);
             if ($image_logo !== false) {
