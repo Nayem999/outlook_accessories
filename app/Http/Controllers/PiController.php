@@ -21,7 +21,7 @@ class PiController extends Controller
         $response['currency_list'] = self::getCurrencyList();
         $response['company_list'] = self::getPartyList(1);
         $response['buyer_list'] = self::getPartyList(2);
-        $response['bank_list'] = Bank::select('id', 'name')->where('active_status', 1)->get();
+        $response['bank_list'] = Bank::select('id', DB::raw("CONCAT(name, ' (', branch,')') as name"))->where('active_status', 1)->get();
 
         return response($response, 200);
     }

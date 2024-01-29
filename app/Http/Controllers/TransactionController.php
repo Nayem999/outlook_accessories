@@ -6,6 +6,7 @@ use App\Models\Bank;
 use App\Models\Trans_purpose;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -20,7 +21,7 @@ class TransactionController extends Controller
         $response['getTransTypeList'] = self::getTransTypeList();
         $response['getTransMethodList'] = self::getTransMethodList();
         $response['getBankTransferMethodList'] = self::getBankTransferMethodList();
-        $response['getBankList'] = Bank::select('id', 'name')->where('active_status', 1)->get();
+        $response['getBankList'] = Bank::select('id', DB::raw("CONCAT(name, ' (', branch,')') as name"))->where('active_status', 1)->get();
         $response['getTransPurposeList'] = Trans_purpose::select('id', 'name')->where('active_status', 1)->get();
         return response($response, 200);
     }

@@ -23,8 +23,8 @@ class LcController extends Controller
         $response['buyer_list'] = self::getPartyList(2);
         $response['pay_term_list'] = self::getPayTermList();
         $response['currency_list'] = self::getCurrencyList();
-        $response['opening_bank_list'] = Bank::select('id', 'name')->where('active_status', 1)->get();
-        $response['advising_bank_list'] = Bank::select('id', 'name')->where('active_status', 1)->whereNotNull('account_number')->get();
+        $response['opening_bank_list'] = Bank::select('id', DB::raw("CONCAT(name, ' (', branch,')') as name"))->where('active_status', 1)->get();
+        $response['advising_bank_list'] = Bank::select('id', DB::raw("CONCAT(name, ' (', branch,')') as name"))->where('active_status', 1)->whereNotNull('account_number')->get();
 
         return response($response, 200);
     }
