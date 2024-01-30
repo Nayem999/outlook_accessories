@@ -36,6 +36,6 @@ class Goods_rcv_dtl extends Model
     }
     public function wo_dtls_info(): BelongsTo
     {
-        return $this->belongsTo(WO_dtl::class,'wo_dtls_id','id')->select('id', 'qnty');
+        return $this->belongsTo(Wo_dtl::class,'wo_dtls_id','id')->select('id', 'qnty');
     }
 }

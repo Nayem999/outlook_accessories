@@ -600,17 +600,37 @@ class ReportController extends Controller
             }
         }
 
-        $trans_data = Transaction::select('trans_type_id', 'date', 'amount')
+        $trans_data = Transaction::select('trans_page', 'trans_type_id', 'date', 'amount')
             ->where('active_status', 1)->where('party_type_id', $party_type_id)->where('party_id', $party_id)->get();
 
         if ($trans_data->count() > 0) {
             $trans_data_array = [];
             foreach ($trans_data as $row) {
                 if ($row->amount > 0) {
-                    if ($row->trans_type_id == 1) {
+                    if ($row->trans_page == 4) {
+                        if ($row->trans_type_id == 1) {
+                            $trans_data_arr = [
+                                'date' => $row->date,
+                                'trans_type' => 'Payable',
+                                'dr_amount' => 0,
+                                'cr_amount' => $row->amount,
+                                'entry_form' => 152,
+                            ];
+                        }
+                        if ($row->trans_type_id == 2) {
+                            $trans_data_arr = [
+                                'date' => $row->date,
+                                'trans_type' => 'Receivable',
+                                'dr_amount' => 0,
+                                'cr_amount' => $row->amount,
+                                'entry_form' => 152,
+                            ];
+                        }
+                    }
+                    else if ($row->trans_type_id == 1) {
                         $trans_data_arr = [
                             'date' => $row->date,
-                            'trans_type' => 'Payment',
+                            'trans_type' => 'Income',
                             'dr_amount' => 0,
                             'cr_amount' => $row->amount,
                             'entry_form' => 152,
@@ -618,7 +638,7 @@ class ReportController extends Controller
                     } else {
                         $trans_data_arr = [
                             'date' => $row->date,
-                            'trans_type' => 'Payment',
+                            'trans_type' => 'Expense',
                             'dr_amount' => $row->amount,
                             'cr_amount' => 0,
                             'entry_form' => 152,
@@ -644,6 +664,7 @@ class ReportController extends Controller
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
+            $response['party_data'] = $party_data;
             $response['status'] = 'error';
             $response['message'] = 'Data not found.';
             return response($response, 422);

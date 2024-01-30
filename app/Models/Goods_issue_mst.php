@@ -21,7 +21,7 @@ class Goods_issue_mst extends Model
     }
     public function order_info(): BelongsTo
     {
-        return $this->belongsTo(order_mst::class,'order_id','id')->select('id', 'order_no');
+        return $this->belongsTo(Order_mst::class,'order_id','id')->select('id', 'order_no');
     }
     public function data_dtls(): HasMany
     {

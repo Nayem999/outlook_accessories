@@ -333,24 +333,10 @@ class PiController extends Controller
         }
 
         $query = $request->all();
-        // $search = $request->input('search');
+        $search = $request->input('search');
         $company_id = $request->input('company_id');
         $buyer_id = $request->input('buyer_id');
 
-        /* $data = Wo_mst::select('wo_msts.id as wo_id', 'wo_msts.wo_no', 'wo_msts.wo_date', 'a.name as supplier_name', 'wo_dtls.id as wo_dtls_id', 'wo_dtls.order_id', 'wo_dtls.order_dtls_id', 'wo_dtls.product_id', 'wo_dtls.style', 'wo_dtls.size_id', 'wo_dtls.color_id', 'wo_dtls.unit_id', 'wo_dtls.qnty', 'wo_dtls.price', 'wo_dtls.amount', 'products.name as product_name', 'sizes.name as size_name', 'colors.name as color_name', 'units.name as unit_name')
-            ->join('wo_dtls', 'wo_dtls.wo_id', '=', 'wo_msts.id')
-            ->join('parties as a', 'wo_msts.supplier_id', '=', 'a.id')
-            ->join('products', 'wo_dtls.product_id', '=', 'products.id')
-            ->leftJoin('sizes', 'wo_dtls.size_id', '=', 'sizes.id')
-            ->leftJoin('colors', 'wo_dtls.color_id', '=', 'colors.id')
-            ->leftJoin('units', 'wo_dtls.unit_id', '=', 'units.id')
-            ->when($company_id, function ($query) use ($company_id) {
-                $query->where('wo_msts.company_id', $company_id);
-            })
-            ->when($buyer_id, function ($query) use ($buyer_id) {
-                $query->where('wo_msts.buyer_id', $buyer_id);
-            })
-            ->orderBy('wo_msts.id', 'desc')->where('wo_msts.active_status', 1)->where('wo_dtls.active_status', 1)->paginate(self::limit($query)); */
         // DB::enableQueryLog();
         $data = Wo_mst::select('wo_msts.id as wo_id', 'wo_msts.wo_no', 'wo_msts.wo_date', 'a.name as supplier_name', 'wo_dtls.id as wo_dtls_id', 'wo_dtls.order_id', 'wo_dtls.order_dtls_id', 'wo_dtls.product_id', 'wo_dtls.style', 'wo_dtls.size_id', 'wo_dtls.color_id', 'wo_dtls.unit_id', 'wo_dtls.qnty', 'wo_dtls.price', 'wo_dtls.amount', 'products.name as product_name', 'sizes.name as size_name', 'colors.name as color_name', 'units.name as unit_name')
             ->join('wo_dtls', 'wo_dtls.wo_id', '=', 'wo_msts.id')
@@ -364,6 +350,14 @@ class PiController extends Controller
             })
             ->when($buyer_id, function ($query) use ($buyer_id) {
                 $query->where('wo_msts.buyer_id', $buyer_id);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where('wo_msts.wo_no', 'LIKE', '%' . $search . '%')
+                    ->orWhere('wo_dtls.style', 'LIKE', '%' . $search . '%')
+                    ->orWhere('wo_dtls.qnty', 'LIKE', '%' . $search . '%')
+                    ->orWhere('products.name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('sizes.name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('colors.name', 'LIKE', '%' . $search . '%');
             })
             ->whereNotIn('wo_dtls.id', function ($subquery) use ($company_id, $buyer_id) {
                 $subquery->select('wo_dtls_id')
