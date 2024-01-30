@@ -13,7 +13,7 @@ class Lc extends Model
     protected $guarded = [];
     public function company_info(): BelongsTo
     {
-        return $this->belongsTo(Party::class, 'company_id', 'id')->select('id', 'name');
+        return $this->belongsTo(Party::class, 'company_id', 'id')->select('id', 'name', 'address', 'bin_no', 'irc', 'tin');
     }
     public function buyer_info(): BelongsTo
     {
@@ -21,11 +21,11 @@ class Lc extends Model
     }
     public function opening_bank_info(): BelongsTo
     {
-        return $this->belongsTo(Bank::class, 'opening_bank_id', 'id')->select('id', 'name', 'branch', 'address', 'bin_no','swift_code');
+        return $this->belongsTo(Bank::class, 'opening_bank_id', 'id')->select('id', 'name', 'branch', 'address', 'bin_no', 'swift_code');
     }
     public function advising_bank_info(): BelongsTo
     {
-        return $this->belongsTo(Bank::class, 'advising_bank_id', 'id')->select('id', 'name', 'branch', 'address');
+        return $this->belongsTo(Bank::class, 'advising_bank_id', 'id')->select('id', 'name', 'branch', 'address', 'bin_no');
     }
     public function data_dtls(): HasMany
     {

@@ -659,15 +659,16 @@ class ReportController extends Controller
             TemporaryTbl::where('entry_form', 152)->delete();
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
-            $response['getPartyTypeList'] = array(1 => 'Company', 3 => 'Supplier', 4 => 'Employee', 5 => 'Others');
+            $response['getPartyTypeList'] = self::getPartyTypeList();
             $response['party_data'] = $party_data;
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
+            $response['getPartyTypeList'] = self::getPartyTypeList();
             $response['party_data'] = $party_data;
             $response['status'] = 'error';
             $response['message'] = 'Data not found.';
-            return response($response, 422);
+            return response($response, 200);
         }
     }
 
