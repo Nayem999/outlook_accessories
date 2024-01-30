@@ -13,7 +13,7 @@ class Pi_mst extends Model
     protected $guarded = [];
     public function company_info(): BelongsTo
     {
-        return $this->belongsTo(Party::class, 'company_id', 'id')->select('id', 'uuid', 'name');
+        return $this->belongsTo(Party::class, 'company_id', 'id')->select('id', 'uuid', 'name', 'address');
     }
     public function buyer_info(): BelongsTo
     {
