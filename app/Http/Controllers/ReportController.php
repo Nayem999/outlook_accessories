@@ -205,9 +205,7 @@ class ReportController extends Controller
             ->leftJoin('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
             ->leftJoin('pi_dtls', function ($join) {
                 $join->on('order_msts.id', '=', 'pi_dtls.order_id')
-                    ->on('wo_dtls.id', '=', 'pi_dtls.wo_dtls_id')
-                    ->on('wo_msts.id', '=', 'pi_dtls.wo_id')
-                    // ->on('pi_dtls.pi_id', '=', 'pi_msts.id')
+                    ->on('order_dtls.id', '=', 'pi_dtls.order_dtls_id')
                     ->where('pi_dtls.active_status', 1);
             })
             ->leftJoin('pi_msts', function ($join) {

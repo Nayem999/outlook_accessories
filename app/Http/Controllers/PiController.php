@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\Lc_pi;
+use App\Models\Order_mst;
 use App\Models\Pi_mst;
 use App\Models\Pi_dtl;
 use App\Models\Wo_mst;
@@ -111,12 +112,12 @@ class PiController extends Controller
         $data_mst = Pi_mst::create($request_data);
         $data_dtls_array = [];
         $pi_value = 0;
+        // 'wo_id' => $row["wo_id"],
+        // 'wo_dtls_id' => $row["wo_dtls_id"],
         foreach ($request->data_dtls as $row) {
             if ($row["order_dtls_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'pi_id' => $data_mst->id,
-                    'wo_id' => $row["wo_id"],
-                    'wo_dtls_id' => $row["wo_dtls_id"],
                     'order_id' => $row["order_id"],
                     'order_dtls_id' => $row["order_dtls_id"],
                     'product_id' => $row["product_id"],
@@ -200,12 +201,12 @@ class PiController extends Controller
         $data_dtls_insert = [];
         $active_dtls_id = array();
         $pi_value = 0;
+        // 'wo_id' => $row["wo_id"],
+        // 'wo_dtls_id' => $row["wo_dtls_id"],
         foreach ($request->data_dtls as $row) {
             if ($row["order_dtls_id"] && $row["qnty"]) {
                 $data_dtls_arr = [
                     'pi_id' => $mst_id,
-                    'wo_id' => $row["wo_id"],
-                    'wo_dtls_id' => $row["wo_dtls_id"],
                     'order_id' => $row["order_id"],
                     'order_dtls_id' => $row["order_dtls_id"],
                     'product_id' => $row["product_id"],
@@ -298,25 +299,6 @@ class PiController extends Controller
         }
     }
 
-    public function getPiInfo($uuid)
-    {
-        $data = Pi_mst::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'bank_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info', 'data_dtls.po_info', 'data_dtls.wo_info'])->where('active_status', 1)->first();
-        // $data_dtls = Pi_dtl::where('wo_id', $data_mst->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->with('wo_info')->where('active_status', 1)->get();
-
-        if ($data) {
-            $response['status'] = 'success';
-            $response['message'] = 'Data found.';
-            $response['response_data'] = $data;
-            $response['currency_list'] = self::getCurrencyList();
-            $response['currency_sign_list'] = self::getCurrencySignList();
-            return response($response, 200);
-        } else {
-            $response['status'] = 'error';
-            $response['message'] = 'Data not found.';
-            return response($response, 422);
-        }
-    }
-
     public function get_wo_add(Request $request)
     {
 
@@ -337,8 +319,39 @@ class PiController extends Controller
         $company_id = $request->input('company_id');
         $buyer_id = $request->input('buyer_id');
 
+        $data = Order_mst::select('order_msts.id as order_id', 'order_msts.order_no', 'order_msts.order_date', 'order_dtls.id as order_dtls_id', 'order_dtls.product_id', 'order_dtls.style', 'order_dtls.size_id', 'order_dtls.color_id', 'order_dtls.unit_id', 'order_dtls.qnty', 'products.name as product_name', 'sizes.name as size_name', 'colors.name as color_name', 'units.name as unit_name')
+            ->join('order_dtls', 'order_dtls.order_id', '=', 'order_msts.id')
+            ->join('products', 'order_dtls.product_id', '=', 'products.id')
+            ->leftJoin('sizes', 'order_dtls.size_id', '=', 'sizes.id')
+            ->leftJoin('colors', 'order_dtls.color_id', '=', 'colors.id')
+            ->leftJoin('units', 'order_dtls.unit_id', '=', 'units.id')
+            ->when($company_id, function ($query) use ($company_id) {
+                $query->where('order_msts.company_id', $company_id);
+            })
+            ->when($buyer_id, function ($query) use ($buyer_id) {
+                $query->where('order_msts.buyer_id', $buyer_id);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where('order_msts.order_no', 'LIKE', '%' . $search . '%')
+                    ->orWhere('order_dtls.style', 'LIKE', '%' . $search . '%')
+                    ->orWhere('order_dtls.qnty', 'LIKE', '%' . $search . '%')
+                    ->orWhere('products.name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('sizes.name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('colors.name', 'LIKE', '%' . $search . '%');
+            })
+            ->whereNotIn('order_dtls.id', function ($subquery) use ($company_id, $buyer_id) {
+                $subquery->select('order_dtls_id')
+                    ->from('pi_dtls')
+                    ->join('order_msts', 'pi_dtls.order_id', '=', 'order_msts.id')
+                    ->where('pi_dtls.active_status', 1)
+                    ->where('order_msts.company_id', $company_id)
+                    ->where('order_msts.buyer_id', $buyer_id);
+            })
+            ->where('order_msts.active_status', 1)->where('order_dtls.active_status', 1)->orderBy('order_msts.id', 'desc')
+            ->paginate(self::limit($query));
+
         // DB::enableQueryLog();
-        $data = Wo_mst::select('wo_msts.id as wo_id', 'wo_msts.wo_no', 'wo_msts.wo_date', 'a.name as supplier_name', 'wo_dtls.id as wo_dtls_id', 'wo_dtls.order_id', 'wo_dtls.order_dtls_id', 'wo_dtls.product_id', 'wo_dtls.style', 'wo_dtls.size_id', 'wo_dtls.color_id', 'wo_dtls.unit_id', 'wo_dtls.qnty', 'wo_dtls.price', 'wo_dtls.amount', 'products.name as product_name', 'sizes.name as size_name', 'colors.name as color_name', 'units.name as unit_name')
+        /* $data = Wo_mst::select('wo_msts.id as wo_id', 'wo_msts.wo_no', 'wo_msts.wo_date', 'a.name as supplier_name', 'wo_dtls.id as wo_dtls_id', 'wo_dtls.order_id', 'wo_dtls.order_dtls_id', 'wo_dtls.product_id', 'wo_dtls.style', 'wo_dtls.size_id', 'wo_dtls.color_id', 'wo_dtls.unit_id', 'wo_dtls.qnty', 'wo_dtls.price', 'wo_dtls.amount', 'products.name as product_name', 'sizes.name as size_name', 'colors.name as color_name', 'units.name as unit_name')
             ->join('wo_dtls', 'wo_dtls.wo_id', '=', 'wo_msts.id')
             ->join('parties as a', 'wo_msts.supplier_id', '=', 'a.id')
             ->join('products', 'wo_dtls.product_id', '=', 'products.id')
@@ -368,7 +381,8 @@ class PiController extends Controller
                     ->where('wo_msts.buyer_id', $buyer_id);
             })
             ->where('wo_msts.active_status', 1)->where('wo_dtls.active_status', 1)->orderBy('wo_msts.id', 'desc')
-            ->paginate(self::limit($query));
+            ->paginate(self::limit($query)); */
+
         // ->toSql();
 
         // $query_db = DB::getQueryLog();
@@ -384,4 +398,31 @@ class PiController extends Controller
             return response($response, 422);
         }
     }
+
+
+
+
+
+    public function getPiInfo($uuid)
+    {
+        $data = Pi_mst::where('uuid', $uuid)->with(['company_info', 'buyer_info', 'bank_info', 'data_dtls.color_info', 'data_dtls.size_info', 'data_dtls.unit_info', 'data_dtls.product_info', 'data_dtls.po_info'])->where('active_status', 1)->first();
+        // $data_dtls = Pi_dtl::where('wo_id', $data_mst->id)->with('product_info')->with('color_info')->with('size_info')->with('unit_info')->with('wo_info')->where('active_status', 1)->get();
+
+        if ($data) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            $response['currency_list'] = self::getCurrencyList();
+            $response['currency_sign_list'] = self::getCurrencySignList();
+            $response['currency_decimal_list'] = self::getCurrencyDecimalList();
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
+
+
 }

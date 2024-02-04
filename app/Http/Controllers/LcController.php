@@ -61,7 +61,7 @@ class LcController extends Controller
 
     public function store(Request $request)
     {
-
+        // 'lc_value' => "required|numeric|max:99999999.99|regex:/^\d+(\.\d{1,2})?$/|digits_between:1,10",
         $validator = Validator::make($request->all(), [
             'company_id' => "required|numeric|max:99999999",
             'buyer_id' => "required|numeric|max:99999999",
@@ -390,7 +390,9 @@ class LcController extends Controller
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
+            $response['currency_list'] = self::getCurrencyList();
             $response['currency_sign_list'] = self::getCurrencySignList();
+            $response['currency_decimal_list'] = self::getCurrencyDecimalList();
             return response($response, 200);
         } else {
             $response['status'] = 'error';

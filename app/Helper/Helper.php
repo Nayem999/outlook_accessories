@@ -130,6 +130,11 @@ trait Helper
         $data = array(1 => '$', 2 => '৳', 3 => '€', 4 => '£', 5 => '¥');
         return $data;
     }
+    public static function getCurrencyDecimalList()
+    {
+        $data = array(1 => 'Cent', 2 => 'Poisa', 3 => 'Cent');
+        return $data;
+    }
 
     public static function getQuotationList()
     {

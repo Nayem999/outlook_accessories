@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Goods_rcv_mst;
 use App\Models\Pi_dtl;
 use App\Models\Wo_mst;
 use App\Models\Wo_dtl;
@@ -250,10 +251,16 @@ class WoController extends Controller
     public function destroy($uuid)
     {
         $data = Wo_mst::where('uuid', $uuid)->first();
-        $pi_add = Pi_dtl::where('wo_id', $data->id)->where('pi_dtls.active_status', 1)->join('pi_msts', 'pi_msts.id', '=', 'Pi_dtls.pi_id')->first();
+        /* $pi_add = Pi_dtl::where('wo_id', $data->id)->where('pi_dtls.active_status', 1)->join('pi_msts', 'pi_msts.id', '=', 'Pi_dtls.pi_id')->first();
         if ($pi_add) {
             $response['status'] = 'error';
             $response['message'] = 'WO can not delete. This WO found in PI page. PI No: ' . $pi_add->pi_no;
+            return response($response, 422);
+        } */
+        $gd_rcv_add = Goods_rcv_mst::where('wo_id', $data->id)->where('goods_rcv_msts.active_status', 1)->first();
+        if ($gd_rcv_add) {
+            $response['status'] = 'error';
+            $response['message'] = 'WO can not delete. This WO found in Goods Receive page. Goods Receive No: ' . $gd_rcv_add->goods_rcv_no;
             return response($response, 422);
         }
 

@@ -26,10 +26,10 @@ class Pi_dtl extends Model
     {
         return $this->belongsTo(Unit::class,'unit_id','id')->select('id', 'name');
     }
-    public function wo_info(): BelongsTo
+    /* public function wo_info(): BelongsTo
     {
         return $this->belongsTo(Wo_mst::class,'wo_id','id')->select('id', 'wo_no');
-    }
+    } */
     public function po_info(): BelongsTo
     {
         return $this->belongsTo(Order_mst::class,'order_id','id')->select('id', 'order_no');
