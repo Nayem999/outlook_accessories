@@ -16,12 +16,12 @@ class UserPermissionController extends Controller
     public function index()
     {
         $role_list = Role::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
-        $user_list = User::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
+        // $user_list = User::orderBy('id', 'desc')->select('id', 'name')->whereNotIn('id',[1])->where('active_status', 1)->get();
         $module_list = self::getModuleList();
         $response['status'] = 'success';
         $response['message'] = 'Data found.';
         $response['role_list'] = $role_list;
-        $response['user_list'] = $user_list;
+        // $response['user_list'] = $user_list;
         $response['module_list'] = $module_list;
         return response($response, 200);
     }
