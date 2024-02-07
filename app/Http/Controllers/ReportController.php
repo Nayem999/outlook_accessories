@@ -501,7 +501,7 @@ class ReportController extends Controller
                 $trans_data_array[] = $trans_data_arr;
             } */
             $lc_data = Lc::select(
-                'lcs.lc_issue_date',
+                'lcs.uuid','lcs.lc_no','lcs.lc_issue_date',
                 DB::raw('SUM(maturity_payments.amount) as payment_amount')
             )
                 ->join('maturity_payments', function ($join) {
@@ -509,7 +509,7 @@ class ReportController extends Controller
                         ->where('maturity_payments.active_status', 1);
                 })
                 ->where('lcs.company_id', $party_id)->where('lcs.active_status', 1)
-                ->groupBy('lcs.lc_issue_date')
+                ->groupBy('uuid','lc_no','lc_issue_date')
                 ->get();
 
             $trans_data_array = [];
@@ -517,6 +517,8 @@ class ReportController extends Controller
                 if ($val->payment_amount > 0) {
                     $trans_data_arr = [
                         'date' => $val->lc_issue_date,
+                        'ext_val' => $val->lc_no,
+                        'ext_val2' => 'pages/lc/commercia-iInvoice-details/'.$val->uuid,
                         'trans_type' => 'Receivable',
                         'dr_amount' => $val->payment_amount,
                         'cr_amount' => 0,
@@ -534,7 +536,7 @@ class ReportController extends Controller
 
         if ($party_type_id == 3) {
             $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
-                'wo_msts.id as id','goods_rcv_msts.rcv_date as date',
+                'wo_msts.uuid','wo_msts.wo_no as display','goods_rcv_msts.rcv_date as date',
                 DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
             )
                 ->join('goods_rcv_dtls', function ($join) {
@@ -550,7 +552,7 @@ class ReportController extends Controller
                         ->where('wo_msts.active_status', 1);
                 })
                 ->where('goods_rcv_msts.supplier_id', $party_id)->where('goods_rcv_msts.active_status', 1)
-                ->groupBy('id','date')
+                ->groupBy('uuid','display','date')
                 ->get();
 
             $trans_data_array = [];
@@ -558,6 +560,8 @@ class ReportController extends Controller
                 if ($row->payable_amount > 0) {
                     $trans_data_arr = [
                         'date' => $row->date,
+                        'ext_val' => $row->display,
+                        'ext_val2' => 'pages/work-list/details/'.$row->uuid,
                         'trans_type' => 'Payable',
                         'dr_amount' => 0,
                         'cr_amount' => $row->payable_amount,
@@ -579,7 +583,7 @@ class ReportController extends Controller
                 DB::raw('SUM(services.amount) as payable_amount')
             )
                 ->where('services.party_id', $party_id)->where('services.active_status', 1)
-                ->groupBy('services.id','services.service_date')
+                ->groupBy('id','service_date')
                 ->get();
 
             $trans_data_array = [];
@@ -587,6 +591,8 @@ class ReportController extends Controller
                 if ($row->payable_amount > 0) {
                     $trans_data_arr = [
                         'date' => $row->service_date,
+                        'ext_val' => 'SV-'.$row->id,
+                        'ext_val2' => '',
                         'trans_type' => 'Payable',
                         'dr_amount' => 0,
                         'cr_amount' => $row->payable_amount,
@@ -601,50 +607,41 @@ class ReportController extends Controller
             }
         }
 
-        $trans_data = Transaction::select('trans_page', 'trans_type_id', 'date', 'amount')
+        $trans_data = Transaction::select('id','uuid','trans_page', 'trans_type_id', 'date', 'amount')
             ->where('active_status', 1)->where('party_type_id', $party_type_id)->where('party_id', $party_id)->get();
 
         if ($trans_data->count() > 0) {
             $trans_data_array = [];
             foreach ($trans_data as $row) {
                 if ($row->amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->date,
+                        'ext_val' => 'TR-'.$row->id,
+                        'ext_val2' => 'pages/transaction/details/'.$row->uuid,
+                        'entry_form' => 152,
+                    ];
+
                     if ($row->trans_page == 4) {
+                        $trans_data_arr['dr_amount'] = 0 ;
+                        $trans_data_arr['cr_amount'] = $row->amount ;
+
                         if ($row->trans_type_id == 1) {
-                            $trans_data_arr = [
-                                'date' => $row->date,
-                                'trans_type' => 'Payable',
-                                'dr_amount' => 0,
-                                'cr_amount' => $row->amount,
-                                'entry_form' => 152,
-                            ];
+                            $trans_data_arr['trans_type'] = 'Payable' ;
                         }
                         if ($row->trans_type_id == 2) {
-                            $trans_data_arr = [
-                                'date' => $row->date,
-                                'trans_type' => 'Receivable',
-                                'dr_amount' => 0,
-                                'cr_amount' => $row->amount,
-                                'entry_form' => 152,
-                            ];
+                            $trans_data_arr['trans_type'] = 'Receivable' ;
                         }
                     }
                     else if ($row->trans_type_id == 1) {
-                        $trans_data_arr = [
-                            'date' => $row->date,
-                            'trans_type' => 'Income',
-                            'dr_amount' => 0,
-                            'cr_amount' => $row->amount,
-                            'entry_form' => 152,
-                        ];
+                        $trans_data_arr['trans_type'] = 'Income' ;
+                        $trans_data_arr['dr_amount'] = 0 ;
+                        $trans_data_arr['cr_amount'] = $row->amount ;
                     } else {
-                        $trans_data_arr = [
-                            'date' => $row->date,
-                            'trans_type' => 'Expense',
-                            'dr_amount' => $row->amount,
-                            'cr_amount' => 0,
-                            'entry_form' => 152,
-                        ];
+                        $trans_data_arr['trans_type'] = 'Expense' ;
+                        $trans_data_arr['dr_amount'] = $row->amount ;
+                        $trans_data_arr['cr_amount'] = 0 ;
                     }
+
                     $trans_data_array[] = $trans_data_arr;
                 }
             }
@@ -670,6 +667,112 @@ class ReportController extends Controller
             $response['status'] = 'error';
             $response['message'] = 'Data not found.';
             return response($response, 200);
+        }
+    }
+
+    public function supplier_leaser_info($party_id)
+    {
+
+        $party_data = Party::where('active_status', 1)->where('id', $party_id)->first();
+        $party_id = $party_data->id;
+        $party_type_id = $party_data->party_type_id;
+        $wo_data_amount = $trans_data_amount = $trans_balance = 0;
+        if ($party_type_id == 3) {
+            $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
+                DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
+            )
+                ->join('goods_rcv_dtls', function ($join) {
+                    $join->on('goods_rcv_dtls.goods_rcv_id', '=', 'goods_rcv_msts.id')
+                        ->where('goods_rcv_dtls.active_status', 1);
+                })
+                ->join('wo_dtls', function ($join) {
+                    $join->on('wo_dtls.id', '=', 'goods_rcv_dtls.wo_dtls_id')
+                        ->where('wo_dtls.active_status', 1);
+                })
+                ->where('goods_rcv_msts.supplier_id', $party_id)->where('goods_rcv_msts.active_status', 1)
+                ->first();
+
+            $wo_data_amount = $wo_val_after_gd_rcv_data->payable_amount;
+
+            $trans_data = Transaction::select(
+                DB::raw('SUM(CASE WHEN trans_type_id=1 THEN amount ELSE 0 END) as trans_income'),
+                DB::raw('SUM(CASE WHEN trans_type_id=2 THEN amount ELSE 0 END) as trans_expense')
+            )
+            ->where('active_status', 1)
+            ->where('party_type_id', $party_type_id)
+            ->where('party_id', $party_id)
+            ->first();
+
+            $trans_data_amount = abs($trans_data->trans_income - $trans_data->trans_expense);
+            $trans_balance = $wo_data_amount - $trans_data_amount ;
+        }
+        else
+        {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 200);
+        }
+
+        $response['status'] = 'success';
+        $response['message'] = 'Data found.';
+        $response['response_data'] = "Total Payable: ".$wo_data_amount.", Total Paid: ".$trans_data_amount." and Balance: ".$trans_balance;
+        return response($response, 200);
+
+    }
+
+    public function style_wise_history(Request $request)
+    {
+        $query = $request->all();
+        $style = $request->style;
+
+        $data = Order_mst::select(
+            'wo_msts.id',
+            'wo_msts.wo_no',
+            'wo_msts.wo_date',
+            'c.name as supplier_name',
+            'products.name as product_name',
+            'order_dtls.style',
+            'sizes.name as size_name',
+            'colors.name as color_name',
+            'wo_dtls.qnty as wo_qnty',
+            'wo_dtls.price as unit_price',
+            'wo_dtls.amount as wo_amount',
+        )
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
+            ->join('products', 'products.id', '=', 'order_dtls.product_id')
+            ->leftJoin('colors', 'colors.id', '=', 'order_dtls.color_id')
+            ->leftJoin('units', 'units.id', '=', 'order_dtls.unit_id')
+            ->leftJoin('sizes', 'sizes.id', '=', 'order_dtls.size_id')
+            ->join('wo_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'wo_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'wo_dtls.order_dtls_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
+            ->join('wo_msts', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->on('wo_msts.order_id', '=', 'order_msts.id')
+                    ->where('wo_msts.active_status', 1);
+            })
+            ->leftJoin('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
+            ->where('order_msts.active_status', 1)
+            ->when($style, function ($query) use ($style) {
+                $query->where('order_dtls.style', 'like', "%$style%");
+            })
+            ->orderByDesc('wo_msts.id')
+            ->paginate(self::limit($query));
+
+        if ($data->count() > 0) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
         }
     }
 

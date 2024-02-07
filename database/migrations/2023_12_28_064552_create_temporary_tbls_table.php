@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('entry_form')->default(0)->nullable();
             $table->integer('ext_key')->default(0)->nullable();
             $table->string('ext_val',100)->nullable();
+            $table->string('ext_val2',100)->nullable();
         });
     }
 
