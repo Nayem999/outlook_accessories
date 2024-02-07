@@ -14,7 +14,7 @@ class ServiceController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Service::Select('Services.*','parties.name as party_name','trans_purposes.name as purposes_name')->orderBy('services.id', 'desc')->where('services.active_status',1)
+        $data = Service::Select('services.*','parties.name as party_name','trans_purposes.name as purposes_name')->orderBy('services.id', 'desc')->where('services.active_status',1)
         ->join('parties', 'services.party_id', '=', 'parties.id')
         ->join('trans_purposes', 'services.purpose_id', '=', 'trans_purposes.id')
         ->when($search, function ($query) use ($search) {

@@ -533,9 +533,8 @@ class ReportController extends Controller
         }
 
         if ($party_type_id == 3) {
-
             $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
-                'goods_rcv_msts.rcv_date as date',
+                'wo_msts.id as id','goods_rcv_msts.rcv_date as date',
                 DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
             )
                 ->join('goods_rcv_dtls', function ($join) {
@@ -546,8 +545,12 @@ class ReportController extends Controller
                     $join->on('wo_dtls.id', '=', 'goods_rcv_dtls.wo_dtls_id')
                         ->where('wo_dtls.active_status', 1);
                 })
+                ->join('wo_msts', function ($join) {
+                    $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                        ->where('wo_msts.active_status', 1);
+                })
                 ->where('goods_rcv_msts.supplier_id', $party_id)->where('goods_rcv_msts.active_status', 1)
-                ->groupBy('date')
+                ->groupBy('id','date')
                 ->get();
 
             $trans_data_array = [];
@@ -572,11 +575,11 @@ class ReportController extends Controller
         if ($party_type_id == 4) {
 
             $service_data = Service::select(
-                'services.service_date',
+                'services.id','services.service_date',
                 DB::raw('SUM(services.amount) as payable_amount')
             )
                 ->where('services.party_id', $party_id)->where('services.active_status', 1)
-                ->groupBy('services.service_date')
+                ->groupBy('services.id','services.service_date')
                 ->get();
 
             $trans_data_array = [];
