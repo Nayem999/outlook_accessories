@@ -6,6 +6,7 @@ use App\Models\Goods_issue_mst;
 use App\Models\Goods_rcv_mst;
 use App\Models\Lc;
 use App\Models\Maturity_payment;
+use App\Models\Order_dtl;
 use App\Models\Order_mst;
 use App\Models\Party;
 use App\Models\Pi_mst;
@@ -518,7 +519,7 @@ class ReportController extends Controller
                     $trans_data_arr = [
                         'date' => $val->lc_issue_date,
                         'ext_val' => $val->lc_no,
-                        'ext_val2' => 'pages/lc/commercia-iInvoice-details/'.$val->uuid,
+                        'ext_val2' => '/pages/lc/commercia-iInvoice-details/'.$val->uuid,
                         'trans_type' => 'Receivable',
                         'dr_amount' => $val->payment_amount,
                         'cr_amount' => 0,
@@ -561,7 +562,7 @@ class ReportController extends Controller
                     $trans_data_arr = [
                         'date' => $row->date,
                         'ext_val' => $row->display,
-                        'ext_val2' => 'pages/work-list/details/'.$row->uuid,
+                        'ext_val2' => '/pages/work-list/details/'.$row->uuid,
                         'trans_type' => 'Payable',
                         'dr_amount' => 0,
                         'cr_amount' => $row->payable_amount,
@@ -617,7 +618,7 @@ class ReportController extends Controller
                     $trans_data_arr = [
                         'date' => $row->date,
                         'ext_val' => 'TR-'.$row->id,
-                        'ext_val2' => 'pages/transaction/details/'.$row->uuid,
+                        'ext_val2' => '/pages/transaction/details/'.$row->uuid,
                         'entry_form' => 152,
                     ];
 
@@ -720,6 +721,30 @@ class ReportController extends Controller
 
     }
 
+    public function style_list()
+    {
+
+        $data = Order_dtl::select(
+            'style'
+        )
+            ->where('order_dtls.active_status', 1)
+            ->whereNotNull('order_dtls.style')
+            ->groupBy('style')
+            ->orderBy('style')
+            ->get();
+
+        if ($data->count() > 0) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
     public function style_wise_history(Request $request)
     {
         $query = $request->all();
@@ -762,7 +787,7 @@ class ReportController extends Controller
                 $query->where('order_dtls.style', 'like', "%$style%");
             })
             ->orderByDesc('wo_msts.id')
-            ->paginate(self::limit($query));
+            ->get();
 
         if ($data->count() > 0) {
             $response['status'] = 'success';

@@ -260,6 +260,7 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::get('party_laser_details_rpt/{uuid}', [ReportController::class, 'party_laser_details_rpt']);
         Route::get('supplier_leaser_info/{id}', [ReportController::class, 'supplier_leaser_info']);
         Route::post('style_wise_history', [ReportController::class, 'style_wise_history']);
+        Route::get('style_list', [ReportController::class, 'style_list']);
     });
 });
 
