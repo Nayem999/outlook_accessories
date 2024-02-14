@@ -103,7 +103,21 @@ class GoodsIssueController extends Controller
         $data_mst = Goods_issue_mst::create($request_data);
         $data_dtls_array = [];
         foreach ($request->data_dtls as $row) {
+            $total_del_qnty = 0;
             if ($row["order_dtls_id"] && $row["qnty"]) {
+                $ord_qnty = Order_dtl::where('active_status', 1)->where('id', $row["order_dtls_id"])->sum('qnty');
+                $prv_del = Goods_issue_dtl::where('active_status', 1)->where('order_dtls_id', $row["order_dtls_id"])->sum('qnty');
+
+                $total_del_qnty = $prv_del + $row["qnty"];
+                if ($total_del_qnty > $ord_qnty) {
+                    DB::rollBack();
+                    $response['status'] = 'error';
+                    $response['message'] = 'Current Delivery Qunatity Over Order Qunatity';
+                    return response($response, 422);
+                } else if ($total_del_qnty == $ord_qnty) {
+                    Order_dtl::where('id', $row["order_dtls_id"])->update(['order_status' => 2]);
+                }
+
                 $data_dtls_arr = [
                     'goods_issue_id' => $data_mst->id,
                     'order_dtls_id' => $row["order_dtls_id"],
