@@ -762,6 +762,7 @@ class ReportController extends Controller
             'wo_dtls.qnty as wo_qnty',
             'wo_dtls.price as unit_price',
             'wo_dtls.amount as wo_amount',
+            'wo_dtls.remarks'
         )
             ->join('order_dtls', function ($join) {
                 $join->on('order_msts.id', '=', 'order_dtls.order_id')
@@ -790,6 +791,166 @@ class ReportController extends Controller
             ->get();
 
         if ($data->count() > 0) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
+    public function supplier_wise_wo_history(Request $request)
+    {
+        $query = $request->all();
+        $supplier_id = $request->supplier_id;
+
+        $data = Order_mst::select(
+            'wo_msts.id',
+            'wo_msts.wo_no',
+            'wo_msts.wo_date',
+            'c.name as supplier_name',
+            'products.name as product_name',
+            'order_dtls.style',
+            'sizes.name as size_name',
+            'colors.name as color_name',
+            'units.name as unit_name',
+            'wo_dtls.qnty as wo_qnty',
+            'wo_dtls.price as unit_price',
+            'wo_dtls.amount as wo_amount',
+            'wo_dtls.remarks'
+        )
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
+            ->join('wo_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'wo_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'wo_dtls.order_dtls_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
+            ->join('wo_msts', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->on('wo_msts.order_id', '=', 'order_msts.id')
+                    ->where('wo_msts.active_status', 1);
+            })
+            ->join('products', 'products.id', '=', 'wo_dtls.product_id')
+            ->leftJoin('colors', 'colors.id', '=', 'wo_dtls.color_id')
+            ->leftJoin('units', 'units.id', '=', 'wo_dtls.unit_id')
+            ->leftJoin('sizes', 'sizes.id', '=', 'wo_dtls.size_id')
+            ->join('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
+            ->where('order_msts.active_status', 1)
+            ->when($supplier_id, function ($query) use ($supplier_id) {
+                $query->where('wo_msts.supplier_id', $supplier_id);
+            })
+            ->orderByDesc('wo_msts.id')
+            ->paginate(self::limit($query));
+
+        if ($data->count() > 0) {
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
+    public function employee_wise_tada_history($party_id)
+    {
+
+        $party_data = Party::where('active_status', 1)->where('id', $party_id)->first();
+        $party_id = $party_data->id;
+        $party_type_id = $party_data->party_type_id;
+
+        if ($party_type_id == 4) {
+
+            $service_data = Service::select(
+                'services.id','services.service_date',
+                DB::raw('SUM(services.amount) as payable_amount')
+            )
+                ->where('services.party_id', $party_id)
+                ->where('services.purpose_id', 1)
+                ->where('services.active_status', 1)
+                ->groupBy('id','service_date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($service_data as $row) {
+                if ($row->payable_amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->service_date,
+                        'ext_val' => 'SV-'.$row->id,
+                        'ext_val2' => '',
+                        'trans_type' => 'Payable',
+                        'dr_amount' => 0,
+                        'cr_amount' => $row->payable_amount,
+                        'entry_form' => 152,
+                    ];
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+
+            if (count($trans_data_array) > 0) {
+                TemporaryTbl::insert($trans_data_array);
+            }
+        }
+
+        $trans_data = Transaction::select('id','uuid','trans_page', 'trans_type_id', 'date', 'amount')
+            ->where('party_type_id', 4)
+            ->where('trans_purpose_id', 1)
+            ->where('party_id', $party_id)
+            ->where('active_status', 1)->get();
+
+        if ($trans_data->count() > 0) {
+            $trans_data_array = [];
+            foreach ($trans_data as $row) {
+                if ($row->amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->date,
+                        'ext_val' => 'TR-'.$row->id,
+                        'ext_val2' => '/pages/transaction/details/'.$row->uuid,
+                        'entry_form' => 152,
+                    ];
+
+                    if ($row->trans_page == 4) {
+                        $trans_data_arr['dr_amount'] = 0 ;
+                        $trans_data_arr['cr_amount'] = $row->amount ;
+
+                        if ($row->trans_type_id == 1) {
+                            $trans_data_arr['trans_type'] = 'Payable' ;
+                        }
+                        if ($row->trans_type_id == 2) {
+                            $trans_data_arr['trans_type'] = 'Receivable' ;
+                        }
+                    }
+                    else if ($row->trans_type_id == 1) {
+                        $trans_data_arr['trans_type'] = 'Income' ;
+                        $trans_data_arr['dr_amount'] = 0 ;
+                        $trans_data_arr['cr_amount'] = $row->amount ;
+                    } else {
+                        $trans_data_arr['trans_type'] = 'Expense' ;
+                        $trans_data_arr['dr_amount'] = $row->amount ;
+                        $trans_data_arr['cr_amount'] = 0 ;
+                    }
+
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+            // dd($trans_data_array);
+            if (count($trans_data_array) > 0) {
+                TemporaryTbl::insert($trans_data_array);
+            }
+        }
+
+        $data = TemporaryTbl::orderBy('date')->get();
+        // dd($data);
+        if ($data->count() > 0) {
+            TemporaryTbl::where('entry_form', 152)->delete();
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
