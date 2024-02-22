@@ -108,6 +108,7 @@ class GoodsRcvController extends Controller
                     'color_id' => $row["color_id"],
                     'unit_id' => $row["unit_id"],
                     'qnty' => $row["qnty"],
+                    'extra_qnty' => $row["extra_qnty"],
                     'remarks' => $row["remark"],
                     'created_by' => $user_id,
                     'created_at' => now(),
@@ -183,6 +184,7 @@ class GoodsRcvController extends Controller
                     'color_id' => $row["color_id"],
                     'unit_id' => $row["unit_id"],
                     'qnty' => $row["qnty"],
+                    'extra_qnty' => $row["extra_qnty"],
                     'remarks' => $row["remark"],
                 ];
 

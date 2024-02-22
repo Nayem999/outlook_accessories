@@ -127,6 +127,7 @@ class GoodsIssueController extends Controller
                     'color_id' => $row["color_id"],
                     'unit_id' => $row["unit_id"],
                     'qnty' => $row["qnty"],
+                    'extra_qnty' => $row["extra_qnty"],
                     'remarks' => $row["remark"],
                     'created_by' => $user_id,
                     'created_at' => now(),
@@ -202,6 +203,7 @@ class GoodsIssueController extends Controller
                 $active_dtls_id[] = $row["dtls_id"];
                 $data_dtls_arr = [
                     'qnty' => $row["qnty"],
+                    'extra_qnty' => $row["extra_qnty"],
                     'remarks' => $row["remark"],
                     'updated_by' => $user_id,
                     'updated_at' => now(),
