@@ -12,7 +12,7 @@ class Pi_dtl extends Model
     protected $guarded = [];
     public function product_info(): BelongsTo
     {
-        return $this->belongsTo(Product::class,'product_id','id')->select('id', 'name');
+        return $this->belongsTo(Product::class,'product_id','id')->select('id', 'name', 'code');
     }
     public function color_info(): BelongsTo
     {
