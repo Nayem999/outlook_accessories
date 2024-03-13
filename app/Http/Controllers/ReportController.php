@@ -13,6 +13,7 @@ use App\Models\Pi_mst;
 use App\Models\Service;
 use App\Models\TemporaryTbl;
 use App\Models\Transaction;
+use App\Models\Wo_mst;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -401,10 +402,10 @@ class ReportController extends Controller
                     $lc_payment_amount = 0;
                 }
                 $party_data[$key]['account_type'] = 'Account Receivable';
-                $party_data[$key]['balance_amount'] = $lc_payment_amount - $trans_balance;
+                $party_data[$key]['balance_amount'] =  number_format($lc_payment_amount - $trans_balance,2);
             } else if ($row->party_type_id == 3) {
 
-                $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
+                /* $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
                     DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
                 )
 
@@ -426,7 +427,25 @@ class ReportController extends Controller
                 }
 
                 $party_data[$key]['account_type'] = 'Account Payable';
-                $party_data[$key]['balance_amount'] = $wo_val_after_gd_rcv - $trans_balance;
+                $party_data[$key]['balance_amount'] = $wo_val_after_gd_rcv - $trans_balance; */
+                $wo_val_data = Wo_mst::select(
+                    DB::raw('SUM(wo_dtls.price*wo_dtls.qnty) as payable_amount')
+                )
+                    ->join('wo_dtls', function ($join) {
+                        $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                            ->where('wo_dtls.active_status', 1);
+                    })
+                    ->where('wo_msts.supplier_id', $row->id)->where('wo_msts.active_status', 1)
+                    ->get();
+
+                if ($wo_val_data->count() > 0) {
+                    $wo_val = $wo_val_data[0]->payable_amount;
+                } else {
+                    $wo_val = 0;
+                }
+
+                $party_data[$key]['account_type'] = 'Account Payable';
+                $party_data[$key]['balance_amount'] = number_format($wo_val - $trans_balance,2);
             } else if ($row->party_type_id == 4) {
 
                 $service_data = Service::select(
@@ -442,7 +461,7 @@ class ReportController extends Controller
                 }
 
                 $party_data[$key]['account_type'] = 'Account Payable';
-                $party_data[$key]['balance_amount'] = $trans_balance - $service_amount;
+                $party_data[$key]['balance_amount'] =  number_format($trans_balance - $service_amount,2);
             } else {
 
                 if ($trans_balance > 0) {
@@ -544,30 +563,22 @@ class ReportController extends Controller
         }
 
         if ($party_type_id == 3) {
-            $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
+            $wo_val_data = Wo_mst::select(
                 'wo_msts.uuid',
                 'wo_msts.wo_no as display',
-                'goods_rcv_msts.rcv_date as date',
-                DB::raw('SUM(wo_dtls.price*goods_rcv_dtls.qnty) as payable_amount')
+                'wo_msts.wo_date as date',
+                DB::raw('SUM(wo_dtls.price*wo_dtls.qnty) as payable_amount')
             )
-                ->join('goods_rcv_dtls', function ($join) {
-                    $join->on('goods_rcv_dtls.goods_rcv_id', '=', 'goods_rcv_msts.id')
-                        ->where('goods_rcv_dtls.active_status', 1);
-                })
                 ->join('wo_dtls', function ($join) {
-                    $join->on('wo_dtls.id', '=', 'goods_rcv_dtls.wo_dtls_id')
+                    $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
                         ->where('wo_dtls.active_status', 1);
                 })
-                ->join('wo_msts', function ($join) {
-                    $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
-                        ->where('wo_msts.active_status', 1);
-                })
-                ->where('goods_rcv_msts.supplier_id', $party_id)->where('goods_rcv_msts.active_status', 1)
+                ->where('wo_msts.supplier_id', $party_id)->where('wo_msts.active_status', 1)
                 ->groupBy('uuid', 'display', 'date')
                 ->get();
 
             $trans_data_array = [];
-            foreach ($wo_val_after_gd_rcv_data as $row) {
+            foreach ($wo_val_data as $row) {
                 if ($row->payable_amount > 0) {
                     $trans_data_arr = [
                         'date' => $row->date,

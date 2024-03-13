@@ -218,6 +218,7 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::post('lc_update', [LcController::class, 'update']);
         Route::delete('lc_delete/{uuid}', [LcController::class, 'destroy']);
         Route::get('lc_details/{uuid}', [LcController::class, 'getLcInfo']);
+        Route::post('lc_update_packing', [LcController::class, 'update_packing']);
 
         //Document Acceptance
         Route::get('doc_acceptance_get_all', [DocAcptController::class, 'index']);

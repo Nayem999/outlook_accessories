@@ -8,6 +8,7 @@ use App\Models\Export_contract;
 use App\Models\Lc;
 use App\Models\Lc_pi;
 use App\Models\Maturity_payment;
+use App\Models\Pi_dtl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -340,6 +341,54 @@ class LcController extends Controller
             return response($response, 422);
         }
     }
+
+    public function update_packing(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            "data_dtls"    => "required|array|min:1",
+            "data_dtls.*.id"  => "required|numeric|min:1",
+            "data_dtls.*.package"  => "required|numeric",
+            "data_dtls.*.nw"  => "required|numeric",
+            "data_dtls.*.gw"  => "required|numeric",
+        ]);
+
+        if ($validator->fails()) {
+            $response = [
+                "status" => "error",
+                'message' => $validator->errors()->all()
+            ];
+            return response($response, 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $data_update = true;
+            foreach ($request->data_dtls as $row) {
+                $data_dtls_arr = [
+                    'packing' => $row["package"],
+                    'net_weight' => $row["nw"],
+                    'gross_weight' => $row["gw"]
+                ];
+                if($data_update){ $data_update = Pi_dtl::where('id', $row["id"])->update($data_dtls_arr); }
+            }
+
+            if ($data_update) {
+                DB::commit();
+                $response['status'] = 'success';
+                $response['message'] = 'Data updated successfully.';
+                return response($response, 200);
+            } else {
+                throw new \Exception('Update operation failed.');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response['status'] = 'error';
+            $response['message'] = $e->getMessage();
+            return response($response, 422);
+        }
+    }
+
 
     public function destroy($uuid)
     {
