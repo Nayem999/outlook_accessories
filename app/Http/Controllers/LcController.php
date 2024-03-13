@@ -347,9 +347,9 @@ class LcController extends Controller
         $validator = Validator::make($request->all(), [
             "data_dtls"    => "required|array|min:1",
             "data_dtls.*.id"  => "required|numeric|min:1",
-            "data_dtls.*.package"  => "required|numeric",
-            "data_dtls.*.nw"  => "required|numeric",
-            "data_dtls.*.gw"  => "required|numeric",
+            "data_dtls.*.package"  => "nullable|numeric",
+            "data_dtls.*.nw"  => "nullable|numeric",
+            "data_dtls.*.gw"  => "nullable|numeric",
         ]);
 
         if ($validator->fails()) {
