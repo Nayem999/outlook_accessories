@@ -132,7 +132,7 @@ trait Helper
     }
     public static function getCurrencyDecimalList()
     {
-        $data = array(1 => 'Cent', 2 => 'Poisa', 3 => 'Cent');
+        $data = array(1 => 'Cents', 2 => 'Poisa', 3 => 'Cents');
         return $data;
     }
 
