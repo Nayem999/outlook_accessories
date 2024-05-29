@@ -61,8 +61,8 @@ class SettingsController extends Controller
             'head_office_phone' => "nullable|string|max:30",
             'tin_number' => "nullable|string|max:50",
             'bin_number' => "nullable|string|max:50",
-            'logo' => "nullable|mimes:png,jpeg,jpg,gif",
-            'signature' => "nullable|mimes:png,jpeg,jpg,gif",
+            'logo' => "nullable|mimes:png,jpeg,jpg,gif|max:3120",
+            'signature' => "nullable|mimes:png,jpeg,jpg,gif|max:3120",
         ]);
         if ($validator->fails()) {
             $response = [

@@ -29,17 +29,20 @@ class DocAcptController extends Controller
         $query = $request->all();
         $search = $request->input('search');
         $maturity_date = $request->input('maturity_date');
-        $data = Doc_acpt_mst::select('doc_acpt_msts.*', 'lcs.uuid as lc_uuid', 'b.name as buyer_name')
+        $data = Doc_acpt_mst::select('doc_acpt_msts.*', 'lcs.uuid as lc_uuid', 'b.name as buyer_name','a.name as company_name','lcs.lc_value')
             ->when($maturity_date, function ($query) use ($maturity_date) {
                 $query->whereDate('doc_acpt_msts.maturity_date', '<=', $maturity_date);
             })
             ->join('lcs', 'lcs.id', '=', 'doc_acpt_msts.lc_id')
+            ->join('parties as a', 'lcs.company_id', '=', 'a.id')
             ->join('parties as b', 'lcs.buyer_id', '=', 'b.id');
         if ($search) {
             $data = $data->where(function ($query) use ($search) {
                 $query->where('doc_acpt_msts.lc_num', 'LIKE', '%' . $search . '%')
                     ->orWhereDate('doc_acpt_msts.doc_acpt_date', 'LIKE', '%' . $search . '%')
-                    ->orWhereDate('doc_acpt_msts.maturity_date', 'LIKE', '%' . $search . '%');
+                    ->orWhereDate('doc_acpt_msts.maturity_date', 'LIKE', '%' . $search . '%')
+                    ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('b.name', 'LIKE', '%' . $search . '%');
             });
         }
         $data = $data->where('doc_acpt_msts.active_status', 1)->orderBy('doc_acpt_msts.id', 'desc')->paginate(self::limit($query));

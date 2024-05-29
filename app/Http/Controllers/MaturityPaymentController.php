@@ -17,14 +17,19 @@ class MaturityPaymentController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Maturity_payment::select('maturity_payments.*');
+        $data = Maturity_payment::select('maturity_payments.*', 'b.name as buyer_name','a.name as company_name')
+        ->join('lcs', 'lcs.id', '=', 'maturity_payments.lc_id')
+        ->join('parties as a', 'lcs.company_id', '=', 'a.id')
+        ->join('parties as b', 'lcs.buyer_id', '=', 'b.id');
 
         if ($search) {
             $data = $data->where(function ($query) use ($search) {
                 $query->where('maturity_payments.lc_num', 'LIKE', '%' . $search . '%')
                 ->orWhere('maturity_payments.lc_value', 'LIKE', '%' . $search . '%')
                 ->orWhere('maturity_payments.amount', 'LIKE', '%' . $search . '%')
-                ->orWhereDate('maturity_payments.payment_date', 'LIKE', '%' . $search . '%');
+                ->orWhereDate('maturity_payments.payment_date', 'LIKE', '%' . $search . '%')
+                ->orWhere('a.name', 'LIKE', '%' . $search . '%')
+                ->orWhere('b.name', 'LIKE', '%' . $search . '%');
             });
         }
         $data = $data->where('maturity_payments.active_status', 1)->orderBy('maturity_payments.id', 'desc')->paginate(self::limit($query));
