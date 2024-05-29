@@ -6,6 +6,7 @@ use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Helper\Helper;
+use Exception;
 use Illuminate\Support\Str;
 
 
@@ -23,20 +24,24 @@ class SettingsController extends Controller
             $response['message'] = 'Data found.';
 
             if ($data->signature) {
-                $path = public_path($data->signature);
-                // $path = base_path($data->signature);
+                // $path = public_path($data->signature);
+                $path = base_path($data->signature);
                 $type = pathinfo($path, PATHINFO_EXTENSION);
-                $image_signature = file_get_contents($path);
-                if ($image_signature !== false) {
-                    $image_signature = 'data:image/' . $type . ';base64,' . base64_encode($image_signature);
-                    $data['image_signature'] = $image_signature;
+                try {
+                    $image_signature = file_get_contents($path,);
+                    if ($image_signature != false) {
+                        $image_signature = 'data:image/' . $type . ';base64,' . base64_encode($image_signature);
+                        $data['image_signature'] = $image_signature;
+                    }
+                } catch (Exception $e) {
+                    $data['image_signature_error'] = $e->getMessage();
                 }
             }
             $path = public_path('uploads/logo/logo_outlook_watermark.png');
             // $path = base_path('uploads/logo/logo_outlook_watermark.png');
             $type = pathinfo($path, PATHINFO_EXTENSION);
             $image_logo = file_get_contents($path);
-            if ($image_logo !== false) {
+            if ($image_logo != false) {
                 $image_logo = 'data:image/' . $type . ';base64,' . base64_encode($image_logo);
                 $data['image_logo_watermark'] = $image_logo;
             }
