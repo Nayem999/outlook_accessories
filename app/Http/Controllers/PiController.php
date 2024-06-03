@@ -34,7 +34,7 @@ class PiController extends Controller
         $company_id = $request->input('company_id');
         $buyer_id = $request->input('buyer_id');
 
-        $data = Pi_mst::select('pi_msts.id', 'pi_msts.uuid', 'pi_msts.pi_date', 'pi_msts.pi_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT pi_dtls.style SEPARATOR', ') as style"))
+        $data = Pi_mst::select('pi_msts.id', 'pi_msts.uuid', 'pi_msts.pi_date', 'pi_msts.pi_no','pi_msts.pi_value', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT pi_dtls.style SEPARATOR', ') as style"))
             ->join('parties as a', 'pi_msts.company_id', '=', 'a.id')
             ->join('parties as b', 'pi_msts.buyer_id', '=', 'b.id')
             ->join('pi_dtls', function ($join) {
@@ -58,7 +58,7 @@ class PiController extends Controller
             ->when($buyer_id, function ($query) use ($buyer_id) {
                 $query->where('pi_msts.buyer_id', $buyer_id);
             })
-            ->groupBy('pi_msts.id', 'pi_msts.uuid', 'pi_msts.pi_date', 'pi_msts.pi_no', 'company_name', 'buyer_name')
+            ->groupBy('pi_msts.id', 'pi_msts.uuid', 'pi_msts.pi_date', 'pi_msts.pi_no','pi_msts.pi_value', 'company_name', 'buyer_name')
             ->orderBy('pi_msts.id', 'desc')->where('pi_msts.active_status', 1)->paginate(self::limit($query));
 
         if ($data->count() > 0) {
