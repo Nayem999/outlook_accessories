@@ -54,7 +54,11 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'role_id' => 'integer',
+        'gender' => 'integer',
+        'active_status' => 'integer',
     ];
+
 
 
     public function role_info(): BelongsTo

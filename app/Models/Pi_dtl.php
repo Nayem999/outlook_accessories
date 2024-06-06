@@ -35,4 +35,21 @@ class Pi_dtl extends Model
         return $this->belongsTo(Order_mst::class,'order_id','id')->select('id', 'order_no');
     }
 
+    protected $casts = [
+        'pi_id' => 'integer',
+        'order_id' => 'integer',
+        'order_dtls_id' => 'integer',
+        'product_id' => 'integer',
+        'size_id' => 'integer',
+        'color_id' => 'integer',
+        'unit_id' => 'integer',
+        'qnty' => 'integer',
+        'price' => 'float',
+        'amount' => 'float',
+        'packing' => 'integer',
+        'net_weight' => 'float',
+        'gross_weight' => 'float',
+        'active_status' => 'integer',
+    ];
+
 }

@@ -9,4 +9,8 @@ class Export_contract extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $casts = [
+        'lc_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

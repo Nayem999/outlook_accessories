@@ -36,4 +36,16 @@ class Lc extends Model
     {
         return $this->HasMany(Export_contract::class, 'lc_id')->where('active_status', 1);
     }
+
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'currency_id' => 'integer',
+        'lc_value' => 'float',
+        'opening_bank_id' => 'integer',
+        'advising_bank_id' => 'integer',
+        'pay_term_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

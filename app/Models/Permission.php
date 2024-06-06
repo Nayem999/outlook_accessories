@@ -9,4 +9,10 @@ class Permission extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $casts = [
+        'role_id' => 'integer',
+        'view' => 'integer',
+        'add' => 'integer',
+        'edit' => 'integer',
+    ];
 }

@@ -38,4 +38,16 @@ class Goods_rcv_dtl extends Model
     {
         return $this->belongsTo(Wo_dtl::class,'wo_dtls_id','id')->select('id', 'qnty');
     }
+
+    protected $casts = [
+        'goods_rcv_id' => 'integer',
+        'wo_dtls_id' => 'integer',
+        'product_id' => 'integer',
+        'size_id' => 'integer',
+        'color_id' => 'integer',
+        'unit_id' => 'integer',
+        'qnty' => 'integer',
+        'extra_qnty' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

@@ -27,4 +27,12 @@ class Sample_mst extends Model
     {
         return $this->HasMany(Inquire_dtl::class,'inquire_id')->where('active_status', 1);
     }
+
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'inquire_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

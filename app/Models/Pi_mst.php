@@ -27,4 +27,13 @@ class Pi_mst extends Model
     {
         return $this->HasMany(Pi_dtl::class, 'pi_id')->where('active_status', 1);
     }
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'bank_id' => 'integer',
+        'currency_id' => 'integer',
+        'pi_value' => 'float',
+        'active_status' => 'integer',
+    ];
 }

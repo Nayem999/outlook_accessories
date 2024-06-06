@@ -9,4 +9,8 @@ class Unit extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    protected $casts = [
+        'active_status' => 'integer',
+    ];
 }

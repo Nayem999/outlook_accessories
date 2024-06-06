@@ -24,4 +24,19 @@ class Transaction extends Model
         return $this->belongsTo(Trans_purpose::class,'trans_purpose_id','id')->select('id', 'name');
     }
 
+    protected $casts = [
+        'trans_page' => 'integer',
+        'trans_type_id' => 'integer',
+        'party_type_id' => 'integer',
+        'party_id' => 'integer',
+        'trans_purpose_id' => 'integer',
+        'trans_method_id' => 'integer',
+        'bank_id' => 'integer',
+        'transfer_method_id' => 'integer',
+        'amount' => 'float',
+        'lc_id' => 'integer',
+        'approval_status' => 'integer',
+        'active_status' => 'integer',
+    ];
+
 }

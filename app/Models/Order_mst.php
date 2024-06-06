@@ -27,4 +27,12 @@ class Order_mst extends Model
     {
         return $this->HasMany(Order_dtl::class,'order_id')->where('active_status', 1);
     }
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'inquire_id' => 'integer',
+        'season' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

@@ -24,4 +24,10 @@ class Goods_rcv_mst extends Model
         return $this->HasMany(Goods_rcv_dtl::class, 'goods_rcv_id')->where('active_status', 1);
     }
 
+    protected $casts = [
+        'supplier_id' => 'integer',
+        'wo_id' => 'integer',
+        'active_status' => 'integer',
+    ];
+
 }

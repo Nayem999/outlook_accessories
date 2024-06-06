@@ -14,4 +14,10 @@ class Lc_pi extends Model
     {
         return $this->belongsTo(Pi_mst::class,'pi_mst_id','id');
     }
+
+    protected $casts = [
+        'lc_id' => 'integer',
+        'pi_mst_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

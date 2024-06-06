@@ -9,4 +9,8 @@ class Bank extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $casts = [
+        'trans_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

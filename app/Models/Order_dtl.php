@@ -33,4 +33,16 @@ class Order_dtl extends Model
     {
         return $this->hasOne(Goods_issue_dtl::class, 'order_dtls_id')->select('order_dtls_id', DB::raw('SUM(qnty) as gd_issue_qnty'))->where('active_status', 1)->groupBy('order_dtls_id');
     }
+
+    protected $casts = [
+        'order_id' => 'integer',
+        'inquire_dtls_id' => 'integer',
+        'product_id' => 'integer',
+        'size_id' => 'integer',
+        'color_id' => 'integer',
+        'unit_id' => 'integer',
+        'qnty' => 'integer',
+        'order_status' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

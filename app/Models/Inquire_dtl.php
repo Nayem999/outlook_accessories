@@ -27,4 +27,14 @@ class Inquire_dtl extends Model
         return $this->belongsTo(Unit::class,'unit_id','id')->select('id', 'name');
     }
 
+    protected $casts = [
+        'inquire_id' => 'integer',
+        'product_id' => 'integer',
+        'size_id' => 'integer',
+        'color_id' => 'integer',
+        'unit_id' => 'integer',
+        'qnty' => 'integer',
+        'active_status' => 'integer',
+    ];
+
 }

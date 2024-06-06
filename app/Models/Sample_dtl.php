@@ -26,4 +26,17 @@ class Sample_dtl extends Model
     {
         return $this->belongsTo(Unit::class,'unit_id','id')->select('id', 'name');
     }
+
+    protected $casts = [
+        'sample_id' => 'integer',
+        'inquire_mst_id' => 'integer',
+        'inquire_dtls_id' => 'integer',
+        'product_id' => 'integer',
+        'size_id' => 'integer',
+        'color_id' => 'integer',
+        'unit_id' => 'integer',
+        'qnty' => 'integer',
+        'sample_status' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

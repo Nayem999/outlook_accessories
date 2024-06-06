@@ -32,4 +32,12 @@ class Wo_mst extends Model
         return $this->HasMany(Wo_dtl::class,'wo_id')->where('active_status', 1);
     }
 
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'supplier_id' => 'integer',
+        'order_id' => 'integer',
+        'currency_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

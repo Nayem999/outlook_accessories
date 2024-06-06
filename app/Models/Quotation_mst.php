@@ -45,6 +45,15 @@ class Quotation_mst extends Model
     {
         return $this->HasMany(Quotation_dtl::class,'quotation_id')->where('active_status', 1);
     }
+
+    protected $casts = [
+        'company_id' => 'integer',
+        'buyer_id' => 'integer',
+        'quotation_type' => 'integer',
+        'order_inquire_id' => 'integer',
+        'currency_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }
 
 

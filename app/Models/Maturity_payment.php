@@ -14,4 +14,14 @@ class Maturity_payment extends Model
     {
         return $this->belongsTo(Lc::class,'lc_id','id');
     }
+
+    protected $casts = [
+        'lc_id' => 'integer',
+        'lc_value' => 'float',
+        'doc_acceptace_id' => 'integer',
+        'exchange_rate' => 'float',
+        'amount' => 'float',
+        'trans_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

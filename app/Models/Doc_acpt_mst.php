@@ -14,4 +14,9 @@ class Doc_acpt_mst extends Model
     {
         return $this->hasMany(Doc_acpt_dtl::class,'doc_acpt_id')->where('active_status', 1);
     }
+
+    protected $casts = [
+        'lc_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }

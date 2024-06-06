@@ -14,4 +14,11 @@ class Doc_acpt_dtl extends Model
     {
         return $this->belongsTo(Document::class,'doc_id','id')->select('id', 'name');;
     }
+
+    protected $casts = [
+        'doc_acpt_id' => 'integer',
+        'doc_id' => 'integer',
+        'doc_where_id' => 'integer',
+        'active_status' => 'integer',
+    ];
 }
