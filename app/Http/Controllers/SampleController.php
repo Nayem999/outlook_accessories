@@ -16,7 +16,7 @@ class SampleController extends Controller
     {
         $response['status'] = 'success';
         $response['message'] = 'Data found.';
-        $response['approved_list'] = self::getApprovedList();
+        $response['approved_list'] = self::getDeliveryList();
         $response['company_list'] = self::getPartyList(1);
         $response['buyer_list'] = self::getPartyList(2);
         $response['product_list'] = self::getProductList();
@@ -31,13 +31,16 @@ class SampleController extends Controller
     {
         $query = $request->all();
         $search = $request->input('search');
-        $data = Sample_mst::select('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'a.name as company_name', 'b.name as buyer_name', DB::raw("group_concat(DISTINCT sample_dtls.style SEPARATOR', ') as style"))
+        $data = Sample_mst::with(['sample_dtls'])
+            ->select('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'a.name as company_name', 'b.name as buyer_name', 'inquire_msts.delivery_req_date as delivery_req_date', DB::raw("group_concat(DISTINCT sample_dtls.style SEPARATOR', ') as style"), DB::raw("group_concat(DISTINCT products.name SEPARATOR', ') as products"))
             ->join('parties as a', 'sample_msts.company_id', '=', 'a.id')
             ->join('parties as b', 'sample_msts.buyer_id', '=', 'b.id')
             ->join('sample_dtls', function ($join) {
                 $join->on('sample_msts.id', '=', 'sample_dtls.sample_id')
                     ->where('sample_dtls.active_status', 1);
             })
+            ->leftJoin('products', 'sample_dtls.product_id', '=', 'products.id')
+            ->leftJoin('inquire_msts', 'sample_msts.inquire_id', '=', 'inquire_msts.id')
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('sample_msts.sample_no', 'LIKE', '%' . $search . '%')
@@ -49,13 +52,14 @@ class SampleController extends Controller
                         });
                 });
             })
-            ->groupBy('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'company_name', 'buyer_name')
+            ->groupBy('sample_msts.id', 'sample_msts.uuid', 'sample_msts.sample_date', 'sample_msts.sample_no', 'company_name', 'buyer_name', 'delivery_req_date')
             ->orderBy('sample_msts.id', 'desc')->where('sample_msts.active_status', 1)
             ->paginate(self::limit($query));
 
         if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
+            $response['approved_list'] = self::getDeliveryList();
             $response['response_data'] = $data;
             return response($response, 200);
         } else {
@@ -292,7 +296,7 @@ class SampleController extends Controller
         if ($data_mst->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
-            $response['approved_list'] = self::getApprovedList();
+            $response['approved_list'] = self::getDeliveryList();
             $response['company_list'] = self::getPartyList(1);
             $response['buyer_list'] = self::getPartyList(2);
             $response['data_mst'] = $data_mst;

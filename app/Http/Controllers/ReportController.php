@@ -17,6 +17,7 @@ use App\Models\Wo_mst;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 class ReportController extends Controller
 {
@@ -40,14 +41,23 @@ class ReportController extends Controller
         /* $date_range = self::getDatesFromRange($monthDate, $endDate,"M",'P1M');
         $response['date_range'] = $date_range; */
         // $response['trans_type_list'] = self::getTransTypeList();
-        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%M') as month"))
+        $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b %y') as month"))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
-            ->groupBy('month')->get();
-        $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%M') as month"))
+            ->orderBy('created_at', 'desc')
+            ->groupBy('month')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->reverse() // Reverse collection order
+            ->values(); // Reset keys to maintain object format
+        $response['monthly_expense'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b %y') as month"))
             ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
-            ->groupBy('month')->get();
+            ->groupBy('month')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->reverse() // Reverse collection order
+            ->values(); // Reset keys to maintain object format
         /*   $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw('MONTH(created_at) as month'))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
@@ -60,6 +70,7 @@ class ReportController extends Controller
         $category_wise_expense = Transaction::select('trans_purpose_id', DB::raw('SUM(amount) as total_amount'))
             ->where('active_status', 1)->where('trans_page', 1)->where('trans_type_id', 2)
             ->groupBy('trans_purpose_id')
+            ->orderBy('created_at', 'desc')
             ->with('trans_purpose_info')->get();
         $category_wise_expense_data = array();
         foreach ($category_wise_expense as $key => $row) {
@@ -69,6 +80,11 @@ class ReportController extends Controller
 
         $response['category_wise_expense'] = $category_wise_expense_data;
 
+        $months = array();
+        for ($i = 11; $i >= 0; $i--) {
+            $months[] = Carbon::now()->subMonths($i)->format('M y');
+        }
+        $response['months_year'] = $months;
 
         return response($response, 200);
     }
@@ -402,7 +418,7 @@ class ReportController extends Controller
                     $lc_payment_amount = 0;
                 }
                 $party_data[$key]['account_type'] = 'Account Receivable';
-                $party_data[$key]['balance_amount'] =  number_format($lc_payment_amount - $trans_balance,2);
+                $party_data[$key]['balance_amount'] =  number_format($lc_payment_amount - $trans_balance, 2);
             } else if ($row->party_type_id == 3) {
 
                 /* $wo_val_after_gd_rcv_data = Goods_rcv_mst::select(
@@ -445,7 +461,7 @@ class ReportController extends Controller
                 }
 
                 $party_data[$key]['account_type'] = 'Account Payable';
-                $party_data[$key]['balance_amount'] = number_format($wo_val - $trans_balance,2);
+                $party_data[$key]['balance_amount'] = number_format($wo_val - $trans_balance, 2);
             } else if ($row->party_type_id == 4) {
 
                 $service_data = Service::select(
@@ -461,7 +477,7 @@ class ReportController extends Controller
                 }
 
                 $party_data[$key]['account_type'] = 'Account Payable';
-                $party_data[$key]['balance_amount'] =  number_format($trans_balance - $service_amount,2);
+                $party_data[$key]['balance_amount'] =  number_format($trans_balance - $service_amount, 2);
             } else {
 
                 if ($trans_balance > 0) {
@@ -892,8 +908,7 @@ class ReportController extends Controller
         $start_date = $request->start_date;
         $end_date = $request->end_date;
         $party_data = Party::where('active_status', 1)->where('id', $party_id)->first();
-        if(!$party_data)
-        {
+        if (!$party_data) {
             $response['status'] = 'error';
             $response['message'] = 'Data not found.';
             return response($response, 422);

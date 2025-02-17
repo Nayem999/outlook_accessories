@@ -195,6 +195,12 @@ trait Helper
         return $data;
     }
 
+    public static function getDeliveryList()
+    {
+        $data = array(1 => 'Delivered', 2 => 'Un Delivered');
+        return $data;
+    }
+
     public static function getModuleList()
     {
         $data = array('Inquiry', 'Quotation', 'Sample', 'Order', 'Work Order', 'Proforma Invoice', 'Goods Receive', 'Goods Delivery', 'LC Management', 'Document Acceptance', 'Maturity', 'Bank', 'Transaction', 'User', 'Party', 'Product', 'Color', 'Size', 'Unit', 'Settings', 'Report', 'Service');

@@ -15,5 +15,6 @@ class User_permission extends Model
         'view' => 'integer',
         'add' => 'integer',
         'edit' => 'integer',
+        'delete' => 'integer',
     ];
 }
