@@ -40,13 +40,12 @@ class ReportController extends Controller
 
         /* $date_range = self::getDatesFromRange($monthDate, $endDate,"M",'P1M');
         $response['date_range'] = $date_range; */
-        // $response['trans_type_list'] = self::getTransTypeList();
+        // $response['trans_type_list'] = self::getTransTypeList(); 
         $response['monthly_income'] = Transaction::select(DB::raw('SUM(amount) as total_amount'), DB::raw("DATE_FORMAT(created_at, '%b %y') as month"))
             ->where('trans_type_id', 1)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
-            ->orderBy('created_at', 'desc')
             ->groupBy('month')
-            ->orderBy('created_at', 'desc')
+            // ->orderBy('created_at', 'desc')
             ->get()
             ->reverse() // Reverse collection order
             ->values(); // Reset keys to maintain object format
@@ -54,7 +53,7 @@ class ReportController extends Controller
             ->where('trans_type_id', 2)->where('active_status', 1)->whereIn('trans_page', [1, 2])
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')
-            ->orderBy('created_at', 'desc')
+            // ->orderBy('created_at', 'desc')
             ->get()
             ->reverse() // Reverse collection order
             ->values(); // Reset keys to maintain object format
@@ -67,14 +66,22 @@ class ReportController extends Controller
             ->whereBetween('created_at', [$monthDate, $endDate])
             ->groupBy('month')->get(); */
 
-        $category_wise_expense = Transaction::select('trans_purpose_id', DB::raw('SUM(amount) as total_amount'))
-            ->where('active_status', 1)->where('trans_page', 1)->where('trans_type_id', 2)
+        $category_wise_expense = Transaction::select(
+            'trans_purpose_id',
+            DB::raw('SUM(amount) as total_amount')
+        )
+            ->where('active_status', 1)
+            ->where('trans_page', 1)
+            ->where('trans_type_id', 2)
             ->groupBy('trans_purpose_id')
-            ->orderBy('created_at', 'desc')
-            ->with('trans_purpose_info')->get();
-        $category_wise_expense_data = array();
+            ->orderByDesc(DB::raw('SUM(amount)'))
+            ->with('trans_purpose_info')
+            ->get();
+
+        $category_wise_expense_data = [];
+
         foreach ($category_wise_expense as $key => $row) {
-            $category_wise_expense_data[$key]['name'] = $row->trans_purpose_info->name;
+            $category_wise_expense_data[$key]['name'] = optional($row->trans_purpose_info)->name;
             $category_wise_expense_data[$key]['amount'] = $row->total_amount;
         }
 
