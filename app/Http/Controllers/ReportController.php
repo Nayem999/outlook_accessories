@@ -296,6 +296,204 @@ class ReportController extends Controller
         }
     }
 
+    public function order_summary_rpt_bk(Request $request)
+    {
+        $query = $request->all();
+        $company_id = $request->company_id;
+        $buyer_id = $request->buyer_id;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $style = $request->style;
+
+        $data = Order_mst::select(
+            'order_dtls.id',
+            'products.id as product_id',
+            'a.name as company_name',
+            'order_msts.order_date',
+            'order_msts.order_no as po_no',
+            'products.name as product_name',
+            'order_dtls.style',
+            'sizes.name as size_name',
+            'colors.name as color_name',
+            'order_dtls.qnty as po_qnty',
+            'units.name as unit_name',
+            'wo_dtls.id as wo_dtls_id',
+            'wo_msts.wo_no',
+            'wo_dtls.qnty as wo_qnty',
+            'd.name as wo_unit_name',
+            'wo_dtls.price as wo_price',
+            'wo_dtls.amount as wo_amount',
+            'order_dtls.order_status',
+            'order_dtls.remarks',
+        )
+            ->join('parties as a', 'order_msts.company_id', '=', 'a.id')
+            ->join('parties as b', 'order_msts.buyer_id', '=', 'b.id')
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
+            ->join('products', 'products.id', '=', 'order_dtls.product_id')
+            ->leftJoin('colors', 'colors.id', '=', 'order_dtls.color_id')
+            ->leftJoin('units', 'units.id', '=', 'order_dtls.unit_id')
+            ->leftJoin('sizes', 'sizes.id', '=', 'order_dtls.size_id')
+            ->leftJoin('wo_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'wo_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'wo_dtls.order_dtls_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
+            ->leftJoin('wo_msts', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->on('wo_msts.order_id', '=', 'order_msts.id')
+                    ->where('wo_msts.active_status', 1);
+            })
+            ->leftJoin('units as d', 'd.id', '=', 'wo_dtls.unit_id')
+            ->leftJoin('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
+            ->where('order_msts.active_status', 1)
+            ->when($company_id, function ($query) use ($company_id) {
+                $query->where('order_msts.company_id', $company_id);
+            })
+            ->when($buyer_id, function ($query) use ($buyer_id) {
+                $query->where('order_msts.buyer_id', $buyer_id);
+            })
+            ->when($start_date, function ($query) use ($start_date) {
+                $query->whereDate('order_msts.order_date', '>=', $start_date);
+            })
+            ->when($end_date, function ($query) use ($end_date) {
+                $query->whereDate('order_msts.order_date', '<=', $end_date);
+            })
+            ->when($style, function ($query) use ($style) {
+                $query->where('order_dtls.style', 'like', "%$style%");
+            })
+            ->orderByDesc('order_dtls.id', 'wo_dtls.id')
+            ->groupBy('id', 'product_id', 'company_name', 'order_date', 'po_no', 'product_name', 'style', 'size_name', 'color_name', 'po_qnty', 'unit_name',  'wo_dtls_id', 'wo_no', 'wo_qnty', 'wo_unit_name', 'wo_price', 'wo_amount', 'order_status', 'remarks')
+            ->paginate(self::limit($query));
+        $totalPoQnty = $data->sum(function ($item) {
+            return (int) ($item->po_qnty ?? 0);
+        });
+        $totalWoAmount = $data->sum(function ($item) {
+            return (int) ($item->wo_amount ?? 0);
+        });
+
+        if ($data->count() > 0) {
+            return response([
+                'status' => 'success',
+                'message' => 'Data found.',
+                'response_data' => [
+                    'data' => $data,
+                    'totalPoQnty' => $totalPoQnty,
+                    'totalWoAmount' => $totalWoAmount,
+                    'order_status_list' => self::getOrderStatusList()
+                ]
+            ], 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
+    public function order_summary_rpt(Request $request)
+    {
+        $query = $request->all();
+        $company_id = $request->company_id;
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $search = $request->search;
+        // \DB::raw("GROUP_CONCAT(d.name SEPARATOR ', ') as wo_unit_name"),
+
+        $data = Order_mst::select(
+            'order_dtls.id',
+            'products.id as product_id',
+            'a.name as company_name',
+            'order_msts.order_date',
+            'order_msts.order_no as po_no',
+            'products.name as product_name',
+            'order_dtls.style',
+            'sizes.name as size_name',
+            'colors.name as color_name',
+            'order_dtls.qnty as po_qnty',
+            'units.name as unit_name',
+            \DB::raw("GROUP_CONCAT(wo_msts.wo_no SEPARATOR ', ') as wo_no"),
+            \DB::raw("SUM(wo_dtls.qnty) as wo_qnty"),
+            \DB::raw("MAX(d.name) as wo_unit_name"),
+            \DB::raw("SUM(wo_dtls.amount) / NULLIF(SUM(wo_dtls.qnty), 0) as wo_price"),  // Weighted Average Price
+            \DB::raw("SUM(wo_dtls.amount) as wo_amount"),
+            'order_dtls.order_status',
+            'order_dtls.remarks'
+        )
+            ->join('parties as a', 'order_msts.company_id', '=', 'a.id')
+            ->join('parties as b', 'order_msts.buyer_id', '=', 'b.id')
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
+            ->join('products', 'products.id', '=', 'order_dtls.product_id')
+            ->leftJoin('colors', 'colors.id', '=', 'order_dtls.color_id')
+            ->leftJoin('units', 'units.id', '=', 'order_dtls.unit_id')
+            ->leftJoin('sizes', 'sizes.id', '=', 'order_dtls.size_id')
+            ->leftJoin('wo_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'wo_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'wo_dtls.order_dtls_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
+            ->leftJoin('wo_msts', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->on('wo_msts.order_id', '=', 'order_msts.id')
+                    ->where('wo_msts.active_status', 1);
+            })
+            ->leftJoin('units as d', 'd.id', '=', 'wo_dtls.unit_id')
+            ->leftJoin('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
+            ->where('order_msts.active_status', 1)
+            ->when($company_id, function ($query) use ($company_id) {
+                $query->where('order_msts.company_id', $company_id);
+            })
+            ->when($start_date, function ($query) use ($start_date) {
+                $query->whereDate('order_msts.order_date', '>=', $start_date);
+            })
+            ->when($end_date, function ($query) use ($end_date) {
+                $query->whereDate('order_msts.order_date', '<=', $end_date);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->where('order_dtls.style', 'like', "%$search%")
+                    ->orWhere('order_msts.order_no', 'like', "%$search%");
+            })
+            ->orderByDesc('order_dtls.id')
+            ->groupBy('id', 'product_id', 'company_name', 'order_date', 'po_no', 'product_name', 'style', 'size_name', 'color_name', 'po_qnty', 'unit_name', 'order_status', 'remarks')
+            ->paginate(self::limit($query));
+
+        // Calculate totals for the paginated data
+        $totalPoQnty = $data->sum(function ($item) {
+            return (float) ($item->po_qnty ?? 0);
+        });
+        $totalWoAmount = $data->sum(function ($item) {
+            return (float) ($item->wo_amount ?? 0);
+        });
+        $totalWoQnty = $data->sum(function ($item) {
+            return (float) ($item->wo_qnty ?? 0);
+        });
+
+        if ($data->count() > 0) {
+            return response([
+                'status' => 'success',
+                'message' => 'Data found.',
+                'response_data' => [
+                    'data' => $data,
+                    'totalPoQnty' => $totalPoQnty,
+                    'totalWoQnty' => $totalWoQnty,
+                    'totalWoAmount' => $totalWoAmount,
+                    'order_status_list' => self::getOrderStatusList()
+                ]
+            ], 200);
+        } else {
+            return response([
+                'status' => 'error',
+                'message' => 'Data not found.'
+            ], 422);
+        }
+    }
+
+
+
     public function expenses_history_rpt(Request $request)
     {
         $query = $request->all();
@@ -895,6 +1093,99 @@ class ReportController extends Controller
             $response['message'] = 'Data found.';
             $response['response_data'] = $data;
             return response($response, 200);
+        } else {
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 422);
+        }
+    }
+
+    public function pi_wise_expense(Request $request)
+    {
+        $query = $request->all();
+        $start_date = $request->start_date;
+        $end_date = $request->end_date;
+        $search = $request->search;
+
+        $data = Order_mst::select(
+            'pi_msts.pi_no',
+            'pi_msts.pi_date',
+            'products.name as product_name',
+            'order_dtls.style',
+            'sizes.name as size_name',
+            'colors.name as color_name',
+            'units.name as unit_name',
+            'pi_dtls.id as pi_dtls_id',
+            'pi_dtls.qnty as pi_qnty',
+            'pi_dtls.price as pi_price',
+            'pi_dtls.amount as pi_amount',
+            'wo_dtls.id as wo_dtls_id',
+            'wo_msts.wo_no',
+            'c.name as supplier_name',
+            'wo_dtls.qnty as wo_qnty',
+            'wo_dtls.price as wo_price',
+            'wo_dtls.amount as wo_amount'
+        )
+            ->join('order_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'order_dtls.order_id')
+                    ->where('order_dtls.active_status', 1);
+            })
+            ->join('pi_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'pi_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'pi_dtls.order_dtls_id')
+                    ->where('pi_dtls.active_status', 1);
+            })
+            ->join('pi_msts', function ($join) {
+                $join->on('pi_dtls.pi_id', '=', 'pi_msts.id')
+                    ->where('pi_msts.active_status', 1);
+            })
+            ->join('wo_dtls', function ($join) {
+                $join->on('order_msts.id', '=', 'wo_dtls.order_id')
+                    ->on('order_dtls.id', '=', 'wo_dtls.order_dtls_id')
+                    ->where('wo_dtls.active_status', 1);
+            })
+            ->join('wo_msts', function ($join) {
+                $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                    ->on('wo_msts.order_id', '=', 'order_msts.id')
+                    ->where('wo_msts.active_status', 1);
+            })
+            ->join('products', 'products.id', '=', 'wo_dtls.product_id')
+            ->leftJoin('colors', 'colors.id', '=', 'wo_dtls.color_id')
+            ->leftJoin('units', 'units.id', '=', 'wo_dtls.unit_id')
+            ->leftJoin('sizes', 'sizes.id', '=', 'wo_dtls.size_id')
+            ->leftJoin('parties as c', 'c.id', '=', 'wo_msts.supplier_id')
+            ->where('order_msts.active_status', 1)
+            ->when($start_date, function ($query) use ($start_date) {
+                $query->where('pi_msts.pi_date', '>=', $start_date);
+            })
+            ->when($end_date, function ($query) use ($end_date) {
+                $query->where('pi_msts.pi_date', '<=', $end_date);
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('pi_msts.pi_no', 'LIKE', "%{$search}%")
+                        ->orWhere('products.name', 'LIKE', "%{$search}%")
+                        ->orWhere('order_dtls.style', 'LIKE', "%{$search}%")
+                        ->orWhere('sizes.name', 'LIKE', "%{$search}%")
+                        ->orWhere('colors.name', 'LIKE', "%{$search}%");
+                });
+            })
+            ->orderByDesc('pi_dtls.id', 'wo_dtls.id')
+            ->paginate(self::limit($query));
+        // $totalWoAmount = $data->clone()->sum('wo_dtls.amount');
+        $totalWoAmount = $data->sum(function ($item) {
+            return (float) ($item->wo_amount ?? 0);
+        });
+
+        if ($data->count() > 0) {
+            return response([
+                'status' => 'success',
+                'message' => 'Data found.',
+                'response_data' => [
+                    'data' => $data,
+                    'total_wo_amount' => $totalWoAmount
+                ]
+            ], 200);
         } else {
             $response['status'] = 'error';
             $response['message'] = 'Data not found.';

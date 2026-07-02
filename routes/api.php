@@ -263,6 +263,8 @@ Route::group(['middleware' => ['cors', 'json.response']], function () {
         Route::post('style_wise_history', [ReportController::class, 'style_wise_history']);
         Route::get('style_list', [ReportController::class, 'style_list']);
         Route::post('supplier_wise_wo_history', [ReportController::class, 'supplier_wise_wo_history']);
+        Route::post('pi_wise_expense', [ReportController::class, 'pi_wise_expense']);
+        Route::post('order_summary_rpt', [ReportController::class, 'order_summary_rpt']);
         Route::post('employee_wise_tada_history', [ReportController::class, 'employee_wise_tada_history']);
     });
 });

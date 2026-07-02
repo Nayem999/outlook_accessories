@@ -34,5 +34,6 @@ class Order_mst extends Model
         'inquire_id' => 'integer',
         'season' => 'integer',
         'active_status' => 'integer',
+        'pi_amount' => 'float',
     ];
 }
