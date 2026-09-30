@@ -711,7 +711,7 @@ class ReportController extends Controller
         }
     }
 
-    public function party_laser_details_rpt($party_uuid)
+    public function party_laser_details_rpt_bk($party_uuid)
     {
 
         $party_data = Party::where('active_status', 1)->where('uuid', $party_uuid)->first();
@@ -898,6 +898,220 @@ class ReportController extends Controller
         // dd($data);
         if ($data->count() > 0) {
             TemporaryTbl::where('entry_form', 152)->delete();
+            $response['status'] = 'success';
+            $response['message'] = 'Data found.';
+            $response['getPartyTypeList'] = self::getPartyTypeList();
+            $response['party_data'] = $party_data;
+            $response['response_data'] = $data;
+            return response($response, 200);
+        } else {
+            $response['getPartyTypeList'] = self::getPartyTypeList();
+            $response['party_data'] = $party_data;
+            $response['status'] = 'error';
+            $response['message'] = 'Data not found.';
+            return response($response, 200);
+        }
+    }
+
+    public function party_laser_details_rpt($party_uuid)
+    {
+
+        $party_data = Party::where('active_status', 1)->where('uuid', $party_uuid)->first();
+        if (!$party_data) {
+            $response['status'] = 'error';
+            $response['message'] = 'Party not found.';
+            return response($response, 200);
+        }
+        $party_id = $party_data->id;
+        $ledger_rows = [];
+        $party_type_id = $party_data->party_type_id;
+
+        if ($party_type_id == 1) {
+
+            /* $pi_val_after_gd_issue_data = Goods_issue_mst::select(
+                'goods_issue_msts.delivery_date as date',
+                DB::raw('SUM(pi_dtls.amount) as receivable_amount')
+            )
+                ->join('goods_issue_dtls', function ($join) {
+                    $join->on('goods_issue_dtls.goods_issue_id', '=', 'goods_issue_msts.id')
+                        ->where('goods_issue_dtls.active_status', 1);
+                })
+                ->join('pi_dtls', function ($join) {
+                    $join->on('pi_dtls.order_dtls_id', '=', 'goods_issue_dtls.order_dtls_id')
+                        ->where('pi_dtls.active_status', 1);
+                })
+                ->where('goods_issue_msts.company_id', $party_id)->where('goods_issue_msts.active_status', 1)
+                ->groupBy('date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($pi_val_after_gd_issue_data as $row) {
+                $trans_data_arr = [
+                    'date' => $row->date,
+                    'trans_type' => 'Receivable',
+                    'dr_amount' => 0,
+                    'cr_amount' => $row->receivable_amount,
+                    'entry_form' => 152,
+                ];
+                $trans_data_array[] = $trans_data_arr;
+            } */
+            $lc_data = Lc::select(
+                'lcs.uuid',
+                'lcs.lc_no',
+                'lcs.lc_issue_date',
+                DB::raw('SUM(maturity_payments.amount) as payment_amount')
+            )
+                ->join('maturity_payments', function ($join) {
+                    $join->on('maturity_payments.lc_id', '=', 'lcs.id')
+                        ->where('maturity_payments.active_status', 1);
+                })
+                ->where('lcs.company_id', $party_id)->where('lcs.active_status', 1)
+                ->groupBy('uuid', 'lc_no', 'lc_issue_date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($lc_data as $val) {
+                if ($val->payment_amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $val->lc_issue_date,
+                        'ext_val' => $val->lc_no,
+                        'ext_val2' => '/pages/lc/commercia-iInvoice-details/' . $val->uuid,
+                        'trans_type' => 'Receivable',
+                        'dr_amount' => $val->payment_amount,
+                        'cr_amount' => 0,
+                        'entry_form' => 152,
+                    ];
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+            // dd($trans_data_array);
+
+            $ledger_rows = array_merge($ledger_rows, $trans_data_array);
+        }
+
+        if ($party_type_id == 3) {
+            $wo_val_data = Wo_mst::select(
+                'wo_msts.uuid',
+                'wo_msts.wo_no as display',
+                'wo_msts.wo_date as date',
+                DB::raw('SUM(wo_dtls.price*wo_dtls.qnty) as payable_amount')
+            )
+                ->join('wo_dtls', function ($join) {
+                    $join->on('wo_msts.id', '=', 'wo_dtls.wo_id')
+                        ->where('wo_dtls.active_status', 1);
+                })
+                ->where('wo_msts.supplier_id', $party_id)->where('wo_msts.active_status', 1)
+                ->groupBy('uuid', 'display', 'date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($wo_val_data as $row) {
+                if ($row->payable_amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->date,
+                        'ext_val' => $row->display,
+                        'ext_val2' => '/pages/work-list/details/' . $row->uuid,
+                        'trans_type' => 'Payable',
+                        'dr_amount' => 0,
+                        'cr_amount' => $row->payable_amount,
+                        'entry_form' => 152,
+                    ];
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+
+            $ledger_rows = array_merge($ledger_rows, $trans_data_array);
+        }
+
+        if ($party_type_id == 4) {
+
+            $service_data = Service::select(
+                'services.id',
+                'services.service_date',
+                DB::raw('SUM(services.amount) as payable_amount')
+            )
+                ->where('services.party_id', $party_id)->where('services.active_status', 1)
+                ->groupBy('id', 'service_date')
+                ->get();
+
+            $trans_data_array = [];
+            foreach ($service_data as $row) {
+                if ($row->payable_amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->service_date,
+                        'ext_val' => 'SV-' . $row->id,
+                        'ext_val2' => '',
+                        'trans_type' => 'Payable',
+                        'dr_amount' => 0,
+                        'cr_amount' => $row->payable_amount,
+                        'entry_form' => 152,
+                    ];
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+
+            $ledger_rows = array_merge($ledger_rows, $trans_data_array);
+        }
+
+        $trans_data = Transaction::select('id', 'uuid', 'trans_page', 'trans_type_id', 'date', 'amount')
+            ->where('active_status', 1)->where('party_type_id', $party_type_id)->where('party_id', $party_id)->get();
+
+        if ($trans_data->count() > 0) {
+            $trans_data_array = [];
+            foreach ($trans_data as $row) {
+                if ($row->amount > 0) {
+                    $trans_data_arr = [
+                        'date' => $row->date,
+                        'ext_val' => 'TR-' . $row->id,
+                        'ext_val2' => '/pages/transaction/details/' . $row->uuid,
+                        'entry_form' => 152,
+                    ];
+
+                    if ($row->trans_page == 4) {
+                        $trans_data_arr['dr_amount'] = 0;
+                        $trans_data_arr['cr_amount'] = $row->amount;
+
+                        if ($row->trans_type_id == 1) {
+                            $trans_data_arr['trans_type'] = 'Payable';
+                        }
+                        if ($row->trans_type_id == 2) {
+                            $trans_data_arr['trans_type'] = 'Receivable';
+                        }
+                    } else if ($row->trans_type_id == 1) {
+                        $trans_data_arr['trans_type'] = 'Income';
+                        $trans_data_arr['dr_amount'] = 0;
+                        $trans_data_arr['cr_amount'] = $row->amount;
+                    } else {
+                        $trans_data_arr['trans_type'] = 'Expense';
+                        $trans_data_arr['dr_amount'] = $row->amount;
+                        $trans_data_arr['cr_amount'] = 0;
+                    }
+
+                    $trans_data_array[] = $trans_data_arr;
+                }
+            }
+            // dd($trans_data_array);
+            $ledger_rows = array_merge($ledger_rows, $trans_data_array);
+        }
+
+        // ledger built directly from party related tables (no temporary table)
+        $data = collect($ledger_rows)
+            ->map(function ($row) {
+                return [
+                    'date' => $row['date'],
+                    'trans_type' => $row['trans_type'],
+                    'dr_amount' => (float) $row['dr_amount'],
+                    'cr_amount' => (float) $row['cr_amount'],
+                    'entry_form' => (int) $row['entry_form'],
+                    'ext_key' => null,
+                    'ext_val' => $row['ext_val'],
+                    'ext_val2' => $row['ext_val2'],
+                ];
+            })
+            ->sortBy('date')
+            ->values();
+        // dd($data);
+        if ($data->count() > 0) {
             $response['status'] = 'success';
             $response['message'] = 'Data found.';
             $response['getPartyTypeList'] = self::getPartyTypeList();
